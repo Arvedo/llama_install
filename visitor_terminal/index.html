@@ -260,135 +260,109 @@
         </div>
       </div>
 
-      <!-- Quick Demo Presets (With Audio Simulator) -->
-      <div class="bg-dark-800/60 border border-dark-700/80 rounded-xl p-4">
-        <div class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider flex items-center justify-between">
-          <span>⚡ Präsentations-Schnelltests</span>
-          <span class="text-[10px] text-emerald-400">1-Klick Demo</span>
-        </div>
-        
-        <button id="btn-preset-reset-session" class="w-full mb-3 p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-bold text-xs flex items-center justify-center gap-2 transition">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <span>🔄 Frische Sitzung starten (Chat leeren)</span>
-        </button>
-
-        <!-- Multi-turn German demo -->
-        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
-          <span>🇩🇪 2-Schritt Dialog (Deutsch)</span>
-          <span class="text-[9px] text-amber-400 font-mono">Turn 1 &rarr; Turn 2</span>
-        </div>
-        <div class="grid grid-cols-1 gap-1.5 text-xs mb-3">
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Hey, ich bin der Johannes.">
-            <div>
-              <span class="font-semibold text-amber-400 font-mono">Schritt 1:</span>
-              <span class="ml-1 text-gray-200">"Hey, ich bin der Johannes."</span>
-            </div>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Name (neu)</span>
-          </button>
-          
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-emerald-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="false"
-                  data-prompt="Ich bin der Dienstleister von der TechSolutions GmbH wegen der Serverwartung.">
-            <div>
-              <span class="font-semibold text-emerald-400 font-mono">Schritt 2:</span>
-              <span class="ml-1 text-gray-200">"Dienstleister von TechSolutions wegen Serverwartung."</span>
-            </div>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shrink-0">Ergänzen</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Hallo, ich bin Johannes von TechSolutions. Ich bin hier wegen der Serverwartung. Johannes Müller.">
-            <div>
-              <span class="font-semibold text-amber-400 font-mono">1 Satz komplett:</span>
-              <span class="ml-1 text-gray-200">"Johannes von TechSolutions... Johannes Müller"</span>
-            </div>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Müller</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-purple-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="john von konklusiv um kurz aufs klo zu gehen">
-            <div>
-              <span class="font-semibold text-purple-400 font-mono">Slang / Kurz:</span>
-              <span class="ml-1 text-gray-200">"john von konklusiv um kurz aufs klo zu gehen"</span>
-            </div>
-            <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 shrink-0">Slang</span>
-          </button>
-        </div>
-
-        <!-- Multilingual demo -->
-        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
-          <span>🌍 Multilingual (Grund &rarr; Deutsch)</span>
-          <span class="text-[9px] text-blue-400 font-mono">Auto-Translation</span>
-        </div>
-        <div class="grid grid-cols-1 gap-1.5 text-xs mb-3">
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-emerald-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Hello, I'm John. I'm here for the internship and I'm from Microsoft.">
-            <div class="truncate mr-2">
-              <span class="font-semibold text-emerald-400 font-mono">🇬🇧 EN:</span>
-              <span class="ml-1 text-gray-200 truncate">"John from Microsoft for internship"</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shrink-0">Praktikum</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-blue-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Hello, my name is John Smith from Acme Corp for the quarterly security audit.">
-            <div class="truncate mr-2">
-              <span class="font-semibold text-blue-400 font-mono">🇬🇧 EN:</span>
-              <span class="ml-1 text-gray-200 truncate">"John Smith from Acme Corp for security audit"</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 shrink-0">Audit</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-indigo-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Bonjour, je m'appelle Pierre Dubois de Renault pour la maintenance du système.">
-            <div class="truncate mr-2">
-              <span class="font-semibold text-indigo-400 font-mono">🇫🇷 FR:</span>
-              <span class="ml-1 text-gray-200 truncate">"Pierre Dubois de Renault pour la maintenance"</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 shrink-0">Wartung</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-purple-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Hola, soy Alejandro Garcia de Iberdrola para la reparación de los servidores.">
-            <div class="truncate mr-2">
-              <span class="font-semibold text-purple-400 font-mono">🇪🇸 ES:</span>
-              <span class="ml-1 text-gray-200 truncate">"Alejandro Garcia de Iberdrola para reparación"</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 shrink-0">Reparatur</span>
-          </button>
-
-          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
-                  data-reset="true"
-                  data-prompt="Buongiorno, sono Pietro Rossi di Tech Solutions per una consultazione dell'hardware.">
-            <div class="truncate mr-2">
-              <span class="font-semibold text-amber-400 font-mono">🇮🇹 IT:</span>
-              <span class="ml-1 text-gray-200 truncate">"Pietro Rossi di Tech Solutions (Hardware)"</span>
-            </div>
-            <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Beratung</span>
-          </button>
-        </div>
-
-        <!-- Audio Demo -->
-        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-          <span>🎙️ Echte Audio-Inferenz (Multimodal)</span>
-        </div>
-        <button id="btn-load-sample-wav" class="w-full text-left p-2 rounded-lg bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-500/30 hover:border-emerald-500 text-gray-200 transition flex items-center justify-between text-xs">
-          <div>
-            <span class="font-semibold text-emerald-400 font-mono">Test-Audio:</span>
-            <span class="ml-1 text-gray-200">speech.wav ("Johannes Müller von Siemens")</span>
+      <!-- Ausweis- & Pass-Scanner (Gemma 4 Multimodal Vision) -->
+      <div class="bg-dark-800/80 border border-dark-700/80 rounded-2xl p-4 shadow-xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-dark-700/80 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Ausweis-Scanner</span>
+            </span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono">VISION</span>
           </div>
-          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">WAV PCM</span>
+          <div class="flex items-center gap-1">
+            <button id="btn-toggle-camera" class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-dark-700 hover:bg-dark-600 text-gray-200 border border-dark-600 transition flex items-center gap-1 cursor-pointer">
+              <span id="cam-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+              <span id="cam-toggle-text">Kamera starten</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Camera Viewport / Live Feed -->
+        <div class="relative bg-dark-950 rounded-xl overflow-hidden border border-dark-700 aspect-video flex items-center justify-center">
+          <video id="passport-video" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
+          <canvas id="passport-canvas-capture" class="hidden"></canvas>
+          
+          <!-- Idle / Offline Placeholder -->
+          <div id="cam-placeholder" class="text-center p-4 flex flex-col items-center gap-2 text-gray-400">
+            <div class="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center text-gray-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+            </div>
+            <p class="text-xs">Kamera inaktiv. Klicken Sie auf <strong>"Kamera starten"</strong>.</p>
+            <p class="text-[10px] text-gray-500">Tipp: Legen Sie den Ausweis auf ein weißes Blatt Papier unter die Webcam.</p>
+          </div>
+
+          <!-- Live Card Positioning Overlay Guide -->
+          <div id="cam-card-guide" class="absolute inset-0 pointer-events-none hidden flex items-center justify-center">
+            <div class="w-[78%] h-[72%] border-2 border-dashed border-cyan-400/70 rounded-xl flex items-center justify-center bg-cyan-500/5 shadow-lg">
+              <span class="text-[10px] font-mono text-cyan-300 font-bold bg-dark-900/80 px-2 py-0.5 rounded border border-cyan-500/30">
+                📄 Ausweis hier ausrichten (Weißer Hintergrund)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Step Capture Action Buttons -->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-snap-front" disabled class="py-2 px-2.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>1. Vorderseite</span>
+          </button>
+
+          <button id="btn-snap-back" disabled class="py-2 px-2.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold text-xs flex items-center justify-center gap-1.5 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>2. Rückseite</span>
+          </button>
+        </div>
+
+        <!-- Captured Previews (DSGVO Blurring by default) -->
+        <div class="flex flex-col gap-1.5 bg-dark-900/60 p-2.5 rounded-xl border border-dark-700/60">
+          <div class="flex items-center justify-between text-[10px] text-gray-400 font-mono">
+            <span>Erfasste Seiten (DSGVO-Schutz):</span>
+            <button id="btn-toggle-blur" class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 transition cursor-pointer">
+              <span id="blur-icon">👁️</span>
+              <span id="blur-label">Verbergen (Aktiv)</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Front Card Preview -->
+            <div class="relative bg-dark-950 rounded-lg border border-dark-700 overflow-hidden h-24 flex items-center justify-center group">
+              <img id="img-preview-front" class="w-full h-full object-contain filter blur-md transition duration-300" src="" alt="Vorderseite" style="display: none;" />
+              <div id="placeholder-front" class="text-[10px] text-gray-500 text-center p-1">Vorderseite noch nicht erfasst</div>
+              <span class="absolute top-1 left-1 px-1.5 py-0.2 rounded text-[8px] font-mono font-bold bg-dark-900/80 text-emerald-400 border border-emerald-500/30">VORNE</span>
+            </div>
+
+            <!-- Back Card Preview -->
+            <div class="relative bg-dark-950 rounded-lg border border-dark-700 overflow-hidden h-24 flex items-center justify-center group">
+              <img id="img-preview-back" class="w-full h-full object-contain filter blur-md transition duration-300" src="" alt="Rückseite" style="display: none;" />
+              <div id="placeholder-back" class="text-[10px] text-gray-500 text-center p-1">Rückseite noch nicht erfasst</div>
+              <span class="absolute top-1 left-1 px-1.5 py-0.2 rounded text-[8px] font-mono font-bold bg-dark-900/80 text-blue-400 border border-blue-500/30">HINTEN</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Execute Inference Button -->
+        <button id="btn-analyze-passport" disabled class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span id="btn-analyze-text">Mit Gemma 4 analysieren (Vision)</span>
         </button>
+
+        <!-- Scanner Extracted Data Info Box -->
+        <div id="passport-extracted-box" class="hidden bg-dark-900/90 border border-cyan-500/30 rounded-xl p-3 text-xs flex flex-col gap-1.5">
+          <div class="flex items-center justify-between border-b border-dark-700 pb-1">
+            <span class="font-bold text-cyan-300 font-mono text-[11px]">Gemma 4 Ausweis-Daten</span>
+            <span id="passport-doc-type-badge" class="px-1.5 py-0.2 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-300">Ausweis</span>
+          </div>
+          <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+            <div><span class="text-gray-400">Name:</span> <strong id="pass-val-name" class="text-gray-100">--</strong></div>
+            <div><span class="text-gray-400">Geboren:</span> <strong id="pass-val-dob" class="text-gray-100">--</strong></div>
+            <div class="col-span-2"><span class="text-gray-400">Adresse:</span> <strong id="pass-val-addr" class="text-gray-100">--</strong></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1149,6 +1123,9 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       const txtInput = document.getElementById('user-text-input');
       if (txtInput) txtInput.value = '';
 
+      // Reset Ausweis-Scanner previews & data
+      resetPassportScannerState();
+
       renderStateUI();
       resetAudioVisualizerToIdle();
 
@@ -1883,7 +1860,6 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
 
     // --- Event Listeners ---
     document.getElementById('btn-dialog-new-session').addEventListener('click', () => startNewSession(true));
-    document.getElementById('btn-preset-reset-session').addEventListener('click', () => startNewSession(true));
     document.getElementById('btn-reset-all').addEventListener('click', () => startNewSession(true));
 
     document.getElementById('btn-mic').addEventListener('click', toggleRecording);
@@ -1900,24 +1876,6 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       e.target.value = '';
     });
 
-    // Sample WAV button
-    document.getElementById('btn-load-sample-wav').addEventListener('click', async () => {
-      try {
-        appendAudioUserMessage("📁 Test-Audio: speech.wav (Johannes Müller von Siemens)");
-        if (window.SAMPLE_AUDIO_BASE64) {
-          await sendAudioToGemma(window.SAMPLE_AUDIO_BASE64, 'wav', true);
-        } else {
-          const resp = await fetch('speech.wav');
-          if (!resp.ok) throw new Error("speech.wav nicht erreichbar");
-          const buf = await resp.arrayBuffer();
-          const b64 = bufferToBase64(buf);
-          await sendAudioToGemma(b64, 'wav', true);
-        }
-      } catch (e) {
-        alert("Fehler beim Senden des Test-Audios: " + e.message);
-      }
-    });
-
     document.getElementById('text-input-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const input = document.getElementById('user-text-input');
@@ -1931,6 +1889,410 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
     document.getElementById('btn-print-pass').addEventListener('click', () => {
       window.print();
     });
+
+    // =========================================================================
+    // --- AUSWEIS- & PASS-SCANNER (Gemma 4 Multimodal Vision Controller) ---
+    // =========================================================================
+    let cameraStream = null;
+    let capturedFrontImage = null; // data:image/jpeg;base64,...
+    let capturedBackImage = null;  // data:image/jpeg;base64,...
+    let isPassportBlurred = true;  // DSGVO-Präsentationsschutz: standardmäßig verpixelt/blur
+
+    async function toggleCamera() {
+      if (cameraStream) {
+        stopCamera();
+      } else {
+        await startCamera();
+      }
+    }
+
+    async function startCamera() {
+      try {
+        const video = document.getElementById('passport-video');
+        const placeholder = document.getElementById('cam-placeholder');
+        const guide = document.getElementById('cam-card-guide');
+        const dot = document.getElementById('cam-status-dot');
+        const label = document.getElementById('cam-toggle-text');
+
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "environment"
+          }
+        });
+
+        video.srcObject = cameraStream;
+        video.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        guide.classList.remove('hidden');
+
+        dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+        label.textContent = "Kamera stoppen";
+
+        document.getElementById('btn-snap-front').disabled = false;
+        document.getElementById('btn-snap-back').disabled = false;
+        addTrackingLog('CAMERA', 'Webcam gestartet für Ausweis-Scan');
+      } catch (err) {
+        console.error("Camera error:", err);
+        alert("Kamerazugriff nicht möglich oder verweigert: " + err.message);
+      }
+    }
+
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      const video = document.getElementById('passport-video');
+      const placeholder = document.getElementById('cam-placeholder');
+      const guide = document.getElementById('cam-card-guide');
+      const dot = document.getElementById('cam-status-dot');
+      const label = document.getElementById('cam-toggle-text');
+
+      video.srcObject = null;
+      video.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      guide.classList.add('hidden');
+
+      dot.className = "w-2 h-2 rounded-full bg-gray-500";
+      label.textContent = "Kamera starten";
+
+      document.getElementById('btn-snap-front').disabled = true;
+      document.getElementById('btn-snap-back').disabled = true;
+      addTrackingLog('CAMERA', 'Webcam gestoppt');
+    }
+
+    // Auto-Crop Ausweis gegen weiße Unterlage (Desktop Webcam)
+    function captureAndCropCard() {
+      const video = document.getElementById('passport-video');
+      if (!video || !cameraStream || video.videoWidth === 0) return null;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const data = imgData.data;
+
+      // Randbereiche (3%) überspringen
+      const startX = Math.floor(w * 0.03);
+      const endX = Math.floor(w * 0.97);
+      const startY = Math.floor(h * 0.03);
+      const endY = Math.floor(h * 0.97);
+      const step = 4; // Schneller 4-Pixel Abtastschritt
+
+      let minX = w, minY = h, maxX = 0, maxY = 0;
+      let cardPixels = 0;
+
+      for (let y = startY; y < endY; y += step) {
+        for (let x = startX; x < endX; x += step) {
+          const idx = (y * w + x) * 4;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+
+          // Weißes Papier: sehr helle Werte & neutrale Farbtemperatur
+          const brightness = (r + g + b) / 3;
+          const deltaColor = Math.max(Math.abs(r - g), Math.abs(g - b), Math.abs(r - b));
+          const isWhitePaper = (brightness > 205 && deltaColor < 28);
+
+          if (!isWhitePaper) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+            cardPixels++;
+          }
+        }
+      }
+
+      const cardW = maxX - minX;
+      const cardH = maxY - minY;
+      let cropCanvas = document.createElement('canvas');
+
+      // Validierung: Mindestens 20% Breite und Höhe, sonst Fallback auf Guide-Zentrum
+      if (cardW > w * 0.20 && cardH > h * 0.20 && cardPixels > 500) {
+        const padX = Math.floor(cardW * 0.02);
+        const padY = Math.floor(cardH * 0.02);
+        const cropX = Math.max(0, minX - padX);
+        const cropY = Math.max(0, minY - padY);
+        const cropWidth = Math.min(w - cropX, cardW + padX * 2);
+        const cropHeight = Math.min(h - cropY, cardH + padY * 2);
+
+        cropCanvas.width = cropWidth;
+        cropCanvas.height = cropHeight;
+        const cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(canvas, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+      } else {
+        // Fallback: 76% zentraler Bereich (gemäß Hilfsrahmen)
+        const cropWidth = Math.floor(w * 0.76);
+        const cropHeight = Math.floor(h * 0.70);
+        const cropX = Math.floor((w - cropWidth) / 2);
+        const cropY = Math.floor((h - cropHeight) / 2);
+
+        cropCanvas.width = cropWidth;
+        cropCanvas.height = cropHeight;
+        const cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(canvas, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+      }
+
+      // Gemma 4 Optimierung: Max Dimension 1024px für schnelle & scharfe OCR
+      let finalCanvas = cropCanvas;
+      const maxDim = 1024;
+      if (cropCanvas.width > maxDim || cropCanvas.height > maxDim) {
+        const scale = Math.min(maxDim / cropCanvas.width, maxDim / cropCanvas.height);
+        finalCanvas = document.createElement('canvas');
+        finalCanvas.width = Math.round(cropCanvas.width * scale);
+        finalCanvas.height = Math.round(cropCanvas.height * scale);
+        const finalCtx = finalCanvas.getContext('2d');
+        finalCtx.drawImage(cropCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+      }
+
+      return finalCanvas.toDataURL('image/jpeg', 0.90);
+    }
+
+    function captureFrontSide() {
+      const dataUrl = captureAndCropCard();
+      if (!dataUrl) return;
+
+      capturedFrontImage = dataUrl;
+      const imgEl = document.getElementById('img-preview-front');
+      const placeholderEl = document.getElementById('placeholder-front');
+
+      imgEl.src = dataUrl;
+      imgEl.style.display = 'block';
+      placeholderEl.style.display = 'none';
+
+      updateBlurStyles();
+      updateAnalyzeButtonState();
+      savePassportToServer('front', dataUrl);
+
+      playBeep(600, 0.08);
+      addTrackingLog('SCANNER', 'Ausweis-Vorderseite erfolgreich aufgenommen');
+    }
+
+    function captureBackSide() {
+      const dataUrl = captureAndCropCard();
+      if (!dataUrl) return;
+
+      capturedBackImage = dataUrl;
+      const imgEl = document.getElementById('img-preview-back');
+      const placeholderEl = document.getElementById('placeholder-back');
+
+      imgEl.src = dataUrl;
+      imgEl.style.display = 'block';
+      placeholderEl.style.display = 'none';
+
+      updateBlurStyles();
+      updateAnalyzeButtonState();
+      savePassportToServer('back', dataUrl);
+
+      playBeep(750, 0.08);
+      addTrackingLog('SCANNER', 'Ausweis-Rückseite erfolgreich aufgenommen');
+    }
+
+    async function savePassportToServer(side, dataUrl) {
+      try {
+        await fetch('/api/save_passport', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            side: side,
+            imageBase64: dataUrl
+          })
+        });
+      } catch (err) {
+        console.warn("Konnte Ausweis nicht auf Server speichern:", err);
+      }
+    }
+
+    function togglePassportBlur() {
+      isPassportBlurred = !isPassportBlurred;
+      updateBlurStyles();
+    }
+
+    function updateBlurStyles() {
+      const imgFront = document.getElementById('img-preview-front');
+      const imgBack = document.getElementById('img-preview-back');
+      const icon = document.getElementById('blur-icon');
+      const label = document.getElementById('blur-label');
+
+      if (isPassportBlurred) {
+        imgFront.classList.add('blur-md');
+        imgBack.classList.add('blur-md');
+        icon.textContent = '👁️';
+        label.textContent = 'Verbergen (Aktiv)';
+        label.className = "text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 transition cursor-pointer";
+      } else {
+        imgFront.classList.remove('blur-md');
+        imgBack.classList.remove('blur-md');
+        icon.textContent = '🙈';
+        label.textContent = 'Sichtbar (Klick für Blur)';
+        label.className = "text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 transition cursor-pointer";
+      }
+    }
+
+    function updateAnalyzeButtonState() {
+      const btn = document.getElementById('btn-analyze-passport');
+      if (capturedFrontImage || capturedBackImage) {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
+    function resetPassportScannerState() {
+      capturedFrontImage = null;
+      capturedBackImage = null;
+      const imgFront = document.getElementById('img-preview-front');
+      const imgBack = document.getElementById('img-preview-back');
+      if (imgFront) { imgFront.src = ''; imgFront.style.display = 'none'; }
+      if (imgBack) { imgBack.src = ''; imgBack.style.display = 'none'; }
+
+      const pFront = document.getElementById('placeholder-front');
+      const pBack = document.getElementById('placeholder-back');
+      if (pFront) pFront.style.display = 'block';
+      if (pBack) pBack.style.display = 'block';
+
+      const pBox = document.getElementById('passport-extracted-box');
+      if (pBox) pBox.classList.add('hidden');
+
+      const pBtn = document.getElementById('btn-analyze-passport');
+      if (pBtn) pBtn.disabled = true;
+    }
+
+    async function analyzePassportWithGemma() {
+      if (!capturedFrontImage && !capturedBackImage) return;
+
+      const btn = document.getElementById('btn-analyze-passport');
+      const btnText = document.getElementById('btn-analyze-text');
+      btn.disabled = true;
+      btnText.innerHTML = `<span class="animate-spin inline-block mr-1">⏳</span> Gemma 4 liest Ausweis...`;
+
+      const tStart = performance.now();
+      addTrackingLog('VISION_REQ', 'Sende Ausweis-Bilder an Gemma 4 Vision', {
+        hasFront: Boolean(capturedFrontImage),
+        hasBack: Boolean(capturedBackImage),
+        endpoint: SERVER_URL
+      });
+
+      try {
+        const content = [];
+
+        // Reihenfolge: Vorderseite, dann Rückseite
+        if (capturedFrontImage) {
+          content.push({
+            type: "image_url",
+            image_url: { url: capturedFrontImage }
+          });
+        }
+        if (capturedBackImage) {
+          content.push({
+            type: "image_url",
+            image_url: { url: capturedBackImage }
+          });
+        }
+
+        content.push({
+          type: "text",
+          text: `Du bist ein Dokumenten-Scanner für ein Empfangsterminal. Analysiere das/die obige(n) Bild(er) (Ausweis, Personalausweis, Reisepass, ID card, Führerschein).
+Lies die folgenden Felder präzise aus:
+- name: Vollständiger Vor- und Nachname der Person (z.B. "Johannes Müller")
+- birth_date: Geburtsdatum (z.B. "15.04.1985")
+- address: Anschrift / Wohnort (z.B. "Musterstraße 12, 80331 München")
+- document_type: Art des Dokuments (z.B. "Personalausweis", "Reisepass", "Führerschein")
+
+Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklärung:
+{"name": "...", "birth_date": "...", "address": "...", "document_type": "..."}`
+        });
+
+        const response = await fetch(SERVER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: "user",
+                content: content
+              }
+            ],
+            temperature: 0.1,
+            max_tokens: 300
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server lieferte HTTP ${response.status}`);
+        }
+
+        const json = await response.json();
+        const rawAnswer = json.choices?.[0]?.message?.content || "";
+        const latency = Math.round(performance.now() - tStart);
+
+        console.log("Gemma Vision Output:", rawAnswer);
+
+        let parsed = null;
+        const jsonMatch = rawAnswer.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0]);
+          } catch (e) {
+            console.warn("JSON Parse Error:", e);
+          }
+        }
+
+        // Telemetrie aktualisieren
+        document.getElementById('telemetry-latency').textContent = `${latency} ms (Vision OCR)`;
+        document.getElementById('telemetry-tokens').textContent = (json.usage?.completion_tokens || 0) + " Tokens";
+        const dotEl = document.getElementById('server-dot');
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0";
+
+        if (parsed) {
+          const box = document.getElementById('passport-extracted-box');
+          box.classList.remove('hidden');
+
+          document.getElementById('passport-doc-type-badge').textContent = parsed.document_type || 'Ausweis';
+          document.getElementById('pass-val-name').textContent = parsed.name || '--';
+          document.getElementById('pass-val-dob').textContent = parsed.birth_date || '--';
+          document.getElementById('pass-val-addr').textContent = parsed.address || '--';
+
+          if (parsed.name && parsed.name !== 'null' && parsed.name.trim() !== '') {
+            state.name = parsed.name.trim();
+            renderStateUI();
+          }
+
+          appendAiMessage(`🪪 Ausweis erfasst: **${parsed.name || 'Dokument'}** (${parsed.document_type || 'Ausweis'}). Geboren: ${parsed.birth_date || 'k.A.'}, Adresse: ${parsed.address || 'k.A.'}`);
+          addTrackingLog('VISION_SUCCESS', 'Ausweisdaten durch Gemma 4 extrahiert', {
+            parsed: parsed,
+            latency: latency + "ms"
+          });
+          playSuccessChime();
+        } else {
+          appendAiMessage(`⚠️ Ausweis konnte nicht strukturiert gelesen werden: ${rawAnswer}`);
+          addTrackingLog('VISION_WARN', 'Keine JSON-Struktur erkannt', { raw: rawAnswer });
+        }
+      } catch (err) {
+        console.error("Passport Vision Error:", err);
+        alert("Fehler bei der Ausweis-Analyse: " + err.message);
+        addTrackingLog('VISION_ERROR', 'Fehler beim Senden an Gemma Vision', { error: err.message });
+      } finally {
+        btn.disabled = false;
+        btnText.textContent = "Mit Gemma 4 analysieren (Vision)";
+      }
+    }
+
+    // Event Listeners for Ausweis-Scanner
+    document.getElementById('btn-toggle-camera').addEventListener('click', toggleCamera);
+    document.getElementById('btn-snap-front').addEventListener('click', captureFrontSide);
+    document.getElementById('btn-snap-back').addEventListener('click', captureBackSide);
+    document.getElementById('btn-toggle-blur').addEventListener('click', togglePassportBlur);
+    document.getElementById('btn-analyze-passport').addEventListener('click', analyzePassportWithGemma);
 
     // --- TRANSLATOR MODAL CONTROLLER ("Übersetzen-Ding") ---
     const transModal = document.getElementById('translator-modal');

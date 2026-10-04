@@ -20,10 +20,12 @@ PORT = 3000
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 LOGS_DIR = os.path.join(DIRECTORY, "logs")
 AUDIO_LOGS_DIR = os.path.join(LOGS_DIR, "audio")
+PASSPORT_LOGS_DIR = os.path.join(LOGS_DIR, "passports")
 LOG_FILE = os.path.join(LOGS_DIR, "terminal.log")
 JSONL_FILE = os.path.join(LOGS_DIR, "terminal_sessions.jsonl")
 
 os.makedirs(AUDIO_LOGS_DIR, exist_ok=True)
+os.makedirs(PASSPORT_LOGS_DIR, exist_ok=True)
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -158,16 +160,33 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(b'{"status": "logged"}')
             return
 
-        elif self.path == '/api/clear-logs':
-            if os.path.exists(LOG_FILE):
-                os.remove(LOG_FILE)
-            if os.path.exists(JSONL_FILE):
-                os.remove(JSONL_FILE)
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.end_headers()
-            self.wfile.write(b'{"status": "cleared"}')
-            return
+        elif self.path == '/api/save_passport':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                data = json.loads(post_data.decode('utf-8'))
+                session_id = data.get('sessionId', 'VIS-00000')
+                side = data.get('side', 'front')
+                img_b64 = data.get('imageBase64', '')
+                if ',' in img_b64:
+                    img_b64 = img_b64.split(',', 1)[1]
+                img_bytes = base64.b64decode(img_b64)
+                fname = f"passport_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{session_id}_{side}.jpg"
+                fpath = os.path.join(PASSPORT_LOGS_DIR, fname)
+                with open(fpath, "wb") as f:
+                    f.write(img_bytes)
+                print(f"[PASSPORT SAVED] {fpath} ({len(img_bytes)} bytes)")
+                sys.stdout.flush()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "saved", "path": fpath, "filename": fname}).encode('utf-8'))
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+                return
 
         super().do_POST()
 
