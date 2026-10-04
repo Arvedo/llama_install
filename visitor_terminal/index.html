@@ -261,7 +261,7 @@
             <input 
               type="text" 
               id="user-text-input" 
-              placeholder="Oder Text tippen (z.B. 'Ich bin Johannes Müller')..." 
+              placeholder="Oder Text tippen (z.B. 'Guten Tag, mein Name ist...')..." 
               class="flex-1 bg-dark-900/90 border border-dark-600 rounded-xl px-3.5 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition font-sans"
             />
             <button type="submit" id="btn-send-text" class="bg-dark-700 hover:bg-dark-600 border border-dark-600 px-3.5 py-2 rounded-xl text-gray-200 transition">
@@ -766,11 +766,11 @@
           <!-- Quick Test Chips -->
           <div class="flex items-center gap-2 pt-0.5 overflow-x-auto text-[11px] font-mono text-gray-400">
             <span class="text-gray-500 shrink-0">Schnelltests:</span>
-            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-purple-300 border border-dark-700 hover:border-purple-500/40 transition cursor-pointer shrink-0" data-text="Bonjour, je m'appelle Arved, ça va?">
-              🇫🇷 "Bonjour, je m'appelle Arved, ça va?"
+            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-purple-300 border border-dark-700 hover:border-purple-500/40 transition cursor-pointer shrink-0" data-text="Bonjour, je viens pour la maintenance des serveurs.">
+              🇫🇷 "Bonjour, je viens pour la maintenance..."
             </button>
-            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-emerald-300 border border-dark-700 hover:border-emerald-500/40 transition cursor-pointer shrink-0" data-text="Guten Tag, mein Name ist Johannes von Caric Solutions, ich bin hier für die Serverwartung.">
-              🇩🇪 "Guten Tag, mein Name ist Johannes..."
+            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-emerald-300 border border-dark-700 hover:border-emerald-500/40 transition cursor-pointer shrink-0" data-text="Guten Tag, ich bin für das geplante Projektmeeting hier.">
+              🇩🇪 "Guten Tag, ich bin für das Meeting..."
             </button>
             <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-blue-300 border border-dark-700 hover:border-blue-500/40 transition cursor-pointer shrink-0" data-text="Hello, my name is John Smith, I am here for an interview and onboarding from Microsoft.">
               🇬🇧 "Hello, I am John Smith..."
@@ -905,9 +905,9 @@ Deine Aufgaben:
    - Erfinde NIEMALS Wörter oder Begrüßungen aus einer anderen Sprache (z. B. kein 'Hello' oder 'Good morning' bei deutscher Sprache)!
 
 2. EXTRAKTION DER 3 PFLICHTFELDER:
-   - 'name': Vollständiger Personenname (Vor- und/oder Nachname). Schneide Firmenzusätze wie 'von [Firma]' strikt ab (z. B. 'Johannes von Siemens' -> name = 'Johannes', company = 'Siemens'). Falls noch unbekannt: null.
-   - 'company': Firma oder Organisation des Besuchers (im Original unübersetzt; falls privat: 'Privat'). Falls noch unbekannt: null.
-   - 'reason': Grund des Besuchs. Übersetze den Grund IMMER VOLLSTÄNDIG ins DEUTSCHE (z. B. 'Serverwartung', 'Meeting', 'Vorstellungsgespräch', 'Lieferung'). Falls noch unbekannt: null.
+   - 'name': Vollständiger Personenname des Besuchers (Vor- und/oder Nachname). Schneide Firmenzusätze wie 'von [Firma]' strikt ab. Falls noch nicht genannt: null.
+   - 'company': Firma oder Organisation des Besuchers (im Original unübersetzt; falls privat: 'Privat'). Falls noch nicht genannt: null.
+   - 'reason': Grund des Besuchs. Übersetze den Grund IMMER VOLLSTÄNDIG ins DEUTSCHE (z. B. 'Meeting', 'Wartung', 'Lieferung'). Falls noch nicht genannt: null.
 
 3. REGELN ZUM AKTUALISIEREN / NEUER BESUCHER:
    - Wenn der Besucher einen neuen oder anderen Namen, eine andere Firma oder einen anderen Grund nennt (z. B. eine neue Vorstellung), überschreiben diese neuen Angaben den bisherigen Stand SOFORT und VOLLSTÄNDIG!
@@ -1552,33 +1552,33 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       const totalStartTime = performance.now();
       document.getElementById('telemetry-latency').textContent = "🎧 Gemma verarbeitet Audio...";
 
-      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}${state.name_verified_by_passport ? ' (PER AUSWEIS VERIFIZIERT - beibehalten, außer der Nutzer korrigiert seinen Namen explizit!)' : ''}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}${state.name_verified_by_passport && state.reason === 'KI-Installation' ? ' (Fester Zweck: KI-Installation)' : ''}`;
-      const userPrompt = `${stateSummary}\n\nWICHTIG: Die Transkription ('transcription') MUSS IMMER zu 100% in der tatsächlich gesprochenen Originalsprache erfolgen (niemals übersetzen).\nHöre das beigefügte gesprochene Audio des Besuchers an und extrahiere die Pflichtfelder:`;
+      const currentAudioTurn = {
+        role: "user",
+        content: [
+          { type: "text", text: "Höre das beigefügte gesprochene Audio des Besuchers an, transkribiere es exakt in der gesprochenen Sprache und extrahiere die Daten als JSON:" },
+          {
+            type: "input_audio",
+            input_audio: {
+              data: base64Audio,
+              format: format
+            }
+          }
+        ]
+      };
 
       addTrackingLog('AUDIO', 'Audio-Anfrage an Gemma gesendet', {
         format: format,
         endpoint: SERVER_URL,
         audioLengthBytes: base64Audio.length,
-        currentState: { name: state.name, company: state.company, reason: state.reason }
+        historyTurns: conversationHistory.length
       });
 
       try {
         const payload = {
           messages: [
             { role: "system", content: TERMINAL_SYSTEM_PROMPT },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: userPrompt },
-                {
-                  type: "input_audio",
-                  input_audio: {
-                    data: base64Audio,
-                    format: format
-                  }
-                }
-              ]
-            }
+            ...conversationHistory,
+            currentAudioTurn
           ],
           response_format: { type: "json_object" },
           max_tokens: 2048,
@@ -1617,15 +1617,15 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
         });
 
         if (parsed) {
-          const transcript = parsed.transcription || "";
-          if (transcript) {
-            updateLastAudioTranscription(transcript);
-          } else {
-            updateLastAudioTranscription("Sprachnachricht verarbeitet");
-          }
+          const transcript = (parsed.transcription || "").trim();
+          updateLastAudioTranscription(transcript || "Sprachnachricht verarbeitet");
+          conversationHistory.push({ role: "user", content: transcript || "Audio-Sprachnachricht" });
+          conversationHistory.push({ role: "assistant", content: rawContent });
           applyExtraction(parsed, transcript);
         } else if (rawContent) {
           updateLastAudioTranscription("Sprachnachricht verarbeitet");
+          conversationHistory.push({ role: "user", content: "Audio-Sprachnachricht" });
+          conversationHistory.push({ role: "assistant", content: rawContent });
           appendAiMessage(rawContent);
         }
       } catch (err) {
@@ -1651,28 +1651,23 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       appendUserMessage(text);
       playBeep(440, 0.08);
 
+      // Add to conversation history
+      conversationHistory.push({ role: "user", content: text });
+
       const totalStartTime = performance.now();
       document.getElementById('telemetry-latency').textContent = "🧠 Gemma verarbeitet Eingabe...";
-
-      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}${state.name_verified_by_passport ? ' (PER AUSWEIS VERIFIZIERT - beibehalten, außer der Nutzer korrigiert seinen Namen explizit!)' : ''}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}${state.name_verified_by_passport && state.reason === 'KI-Installation' ? ' (Fester Zweck: KI-Installation)' : ''}`;
-      const userPrompt = `${stateSummary}\n\nNeue Benutzereingabe (Text): "${text}"`;
 
       addTrackingLog('TEXT', 'Text-Anfrage an Gemma gesendet', {
         inputText: text,
         endpoint: SERVER_URL,
-        currentState: { name: state.name, company: state.company, reason: state.reason }
+        historyTurns: conversationHistory.length
       });
 
       try {
         const payload = {
           messages: [
             { role: "system", content: TERMINAL_SYSTEM_PROMPT },
-            {
-              role: "user",
-              content: [
-                { type: "text", text: userPrompt }
-              ]
-            }
+            ...conversationHistory
           ],
           response_format: { type: "json_object" },
           max_tokens: 2048,
@@ -1711,8 +1706,10 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
         });
 
         if (parsed) {
+          conversationHistory.push({ role: "assistant", content: rawContent });
           applyExtraction(parsed, text);
         } else if (rawContent) {
+          conversationHistory.push({ role: "assistant", content: rawContent });
           appendAiMessage(rawContent);
         }
       } catch (err) {
@@ -1734,7 +1731,6 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
           /falsch(er)?\s*name/i.test(transcript) ||
           /heiße\s+(eigentlich|nicht|doch)/i.test(transcript) ||
           /name\s+(ist\s+falsch|stimmt\s+nicht|korrigier)/i.test(transcript) ||
-          /nicht\s+arved/i.test(transcript) ||
           /mein\s+name\s+ist\s+(eigentlich|in\s+wirklichkeit)/i.test(transcript) ||
           /ich\s+heiße\s+in\s+wirklichkeit/i.test(transcript) ||
           /korrektur/i.test(transcript)
@@ -2573,21 +2569,19 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
           text: `Du bist ein hochpräziser Dokumenten-Scanner für ein Empfangsterminal.
 Du analysierst die beigefügten Ausweisbilder (deutscher Personalausweis, ID-Karte oder Reisepass).
 
-WICHTIGER DOKUMENTEN-AUFBAU ZUR FEHLERVERMEIDUNG:
+DOKUMENTEN-AUFBAU:
 
 1. BILD 1 ist die VORDERSEITE:
-   - Hier befindet sich der VOLLSTÄNDIGE NAME der Person:
-     * "Name" / Nachname (Familienname, z. B. 'Oberstraß' oder 'Müller').
-     * "Vornamen" (z. B. 'Arved Marvin' oder 'Johannes').
-     * WICHTIGER HINWEIS: Nachnamen wie 'Oberstraß', 'Steinweg', 'Bachmann' etc. sind Familiennamen und NIEMALS Adressen! Setze den Namen aus Vorname(n) und Nachname zusammen: z. B. "Arved Marvin Oberstraß".
-   - Hier befindet sich das GEBURTSDATUM ("Geburtstag", z. B. '29.10.1993').
+   - "Name": Der Familienname / Nachname der Person.
+   - "Vornamen": Alle Vornamen der Person.
+   - Setze das Feld 'name' aus Vorname(n) und Familienname zusammen (zuerst Vorname(n), dann Nachname).
+   - "Geburtstag" / Geburtsdatum: TT.MM.JJJJ ablesen.
+   - WICHTIG: Familiennamen sind keine Straßennamen!
 
 2. BILD 2 ist die RÜCKSEITE:
-   - Hier befindet sich die ANSCHRIFT / ADRESSE:
-     * Die Wohnadresse befindet sich AUSSCHLIESSLICH auf der Rückseite im Feld 'Anschrift' (oder Adressaufkleber)!
-     * Sie besteht aus Straße, Hausnummer, 5-stelliger PLZ und Ort (z. B. 'Musterstraße 12, 34127 Kassel').
-     * VERWECHSLUNG VERMEIDEN: Der Nachname der Person (z. B. 'Oberstraß') darf NIEMALS als Straßenname halluziniert werden! Lies nur den echten Straßennamen im Anschriftenfeld ab. Falls die Straße auf dem Bild unscharf ist, gib PLZ und Ort an oder null, aber erfinde keine Straße.
-   - In den 3 maschinenlesbaren Zeilen ganz unten (MRZ) ist der Nachname und Vorname ebenfalls kodiert (z. B. OBERSTRASS<<ARVED<MARVIN...).
+   - "Anschrift": Die Wohnadresse befindet sich im Anschriftenfeld.
+   - Lies Straße, Hausnummer, 5-stellige PLZ und Ort exakt ab.
+   - Die maschinenlesbaren Zeilen (MRZ) unten zur Gegenprüfung des Namens nutzen.
 
 Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklärung:
 {
@@ -2678,7 +2672,7 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
           state.reason = "KI-Installation";
 
           // Dynamischer Vorname für die Begrüßung
-          const firstName = (state.name && state.name.trim()) ? state.name.trim().split(/\s+/)[0] : 'Arved';
+          const firstName = (state.name && state.name.trim()) ? state.name.trim().split(/\s+/)[0] : 'Besucher';
 
           let welcomeMsg = `🪪 Guten Tag **${firstName}**! Schön, dass Sie da sind, um die KI zu installieren. Ihr Ausweis (**${state.name || firstName}**) wurde erfolgreich geprüft.`;
           if (!state.company) {
@@ -2687,7 +2681,27 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
             welcomeMsg += ` Ihre Firma (${state.company}) ist bereits hinterlegt. Der Besucherausweis wird gedruckt!`;
           }
 
+          // 1:1 Synchronisation mit dem sichtbaren UI-Chatverlauf und dem Model-Chatverlauf
+          appendUserMessage(`🪪 [Ausweis vorgelegt: ${parsed.document_type || 'Ausweis'} von ${state.name || 'Besucher'}]`);
+          conversationHistory.push({
+            role: "user",
+            content: `Ich lege meinen Ausweis vor. Mein Name ist ${state.name || 'unbekannt'}, Geburtsdatum: ${state.birth_date || 'k.A.'}. Grund meines Besuchs: KI-Installation.`
+          });
+
           appendAiMessage(welcomeMsg);
+          conversationHistory.push({
+            role: "assistant",
+            content: JSON.stringify({
+              transcription: `Ausweis erfasst: ${state.name}`,
+              name: state.name,
+              company: state.company,
+              reason: state.reason,
+              status: state.company ? "complete" : "incomplete",
+              missing_fields: state.company ? [] : ["company"],
+              followup_question: welcomeMsg
+            })
+          });
+
           addTrackingLog('VISION_SUCCESS', 'Ausweisdaten verifiziert & Besuchsgrund KI-Installation gesetzt', {
             name: state.name,
             reason: state.reason,
