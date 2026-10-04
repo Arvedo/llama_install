@@ -2225,7 +2225,7 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
               }
             ],
             temperature: 0.1,
-            max_tokens: 300
+            max_tokens: 1500
           })
         });
 
@@ -2234,7 +2234,11 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
         }
 
         const json = await response.json();
-        const rawAnswer = json.choices?.[0]?.message?.content || "";
+        const choice = json.choices?.[0];
+        let rawAnswer = choice?.message?.content || "";
+        if (!rawAnswer && choice?.message?.reasoning_content) {
+          rawAnswer = choice.message.reasoning_content;
+        }
         const latency = Math.round(performance.now() - tStart);
 
         console.log("Gemma Vision Output:", rawAnswer);
