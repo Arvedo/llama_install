@@ -79,6 +79,19 @@
         display: none !important;
       }
     }
+
+    /* Presentation Live Checkerboard Privacy Blur */
+    .cam-checkerboard-active {
+      backdrop-filter: blur(14px) contrast(115%);
+      -webkit-backdrop-filter: blur(14px) contrast(115%);
+      mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%) 50% / 34px 34px;
+      -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%) 50% / 34px 34px;
+      background: repeating-conic-gradient(rgba(15, 23, 42, 0.35) 0% 25%, transparent 0% 50%) 50% / 34px 34px;
+      border: 1px solid rgba(6, 182, 212, 0.25);
+    }
+    .video-soft-blur {
+      filter: blur(4px);
+    }
   </style>
 
   <!-- Preloaded offline sample audio -->
@@ -339,6 +352,9 @@
           <video id="passport-video" autoplay playsinline muted class="w-full h-full object-cover hidden transition-transform duration-100"></video>
           <canvas id="passport-canvas-capture" class="hidden"></canvas>
           
+          <!-- Live Checkerboard Privacy Blur Overlay (Mosaik-Zensur für Beamer/Präsentation) -->
+          <div id="cam-checkerboard-overlay" class="absolute inset-0 pointer-events-none hidden transition-opacity duration-300"></div>
+
           <!-- Idle / Offline Placeholder -->
           <div id="cam-placeholder" class="text-center p-4 flex flex-col items-center gap-2 text-gray-400">
             <div class="w-10 h-10 rounded-full bg-dark-800 flex items-center justify-center text-gray-500">
@@ -359,6 +375,14 @@
 
           <!-- Tap to focus visual indicator -->
           <div id="cam-focus-reticle" class="absolute w-12 h-12 border-2 border-cyan-400 rounded-lg pointer-events-none hidden transition-all duration-300 -translate-x-1/2 -translate-y-1/2 shadow-lg shadow-cyan-500/50"></div>
+
+          <!-- Live Privacy Mode Badge & Quick Toggle Overlay -->
+          <div id="cam-privacy-badge-container" class="absolute top-2 right-2 hidden flex items-center gap-1 z-10">
+            <button id="btn-toggle-live-blur" class="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-dark-900/90 text-cyan-300 border border-cyan-500/40 hover:bg-dark-800 transition shadow flex items-center gap-1 cursor-pointer">
+              <span id="live-blur-icon">🛡️</span>
+              <span id="live-blur-text">Schachbrett-Zensur: AN</span>
+            </button>
+          </div>
         </div>
 
         <!-- 2-Step Capture Action Buttons -->
@@ -1984,6 +2008,48 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       }
     }
 
+    let isLiveBlurActive = true; // Präsentations-Schachbrett standardmäßig aktiv
+
+    function toggleLiveBlur() {
+      isLiveBlurActive = !isLiveBlurActive;
+      updateLiveBlurStyles();
+    }
+
+    function updateLiveBlurStyles() {
+      const overlay = document.getElementById('cam-checkerboard-overlay');
+      const video = document.getElementById('passport-video');
+      const icon = document.getElementById('live-blur-icon');
+      const text = document.getElementById('live-blur-text');
+      const badgeContainer = document.getElementById('cam-privacy-badge-container');
+
+      if (!cameraStream) {
+        if (overlay) overlay.classList.add('hidden');
+        if (badgeContainer) badgeContainer.classList.add('hidden');
+        if (video) video.classList.remove('video-soft-blur');
+        return;
+      }
+
+      if (badgeContainer) badgeContainer.classList.remove('hidden');
+
+      if (isLiveBlurActive) {
+        if (overlay) {
+          overlay.classList.remove('hidden');
+          overlay.classList.add('cam-checkerboard-active');
+        }
+        if (video) video.classList.add('video-soft-blur');
+        if (icon) icon.textContent = '🛡️';
+        if (text) text.textContent = 'Schachbrett-Zensur: AN';
+      } else {
+        if (overlay) {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('cam-checkerboard-active');
+        }
+        if (video) video.classList.remove('video-soft-blur');
+        if (icon) icon.textContent = '👁️';
+        if (text) text.textContent = 'Zensur: AUS';
+      }
+    }
+
     async function toggleCamera() {
       if (cameraStream) {
         stopCamera();
@@ -2021,6 +2087,9 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
         video.classList.remove('hidden');
         placeholder.classList.add('hidden');
         guide.classList.remove('hidden');
+
+        // Live Checkerboard Blur initialisieren
+        updateLiveBlurStyles();
 
         dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
         label.textContent = "Kamera stoppen";
@@ -2087,6 +2156,8 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       video.style.transform = 'none';
       placeholder.classList.remove('hidden');
       guide.classList.add('hidden');
+
+      updateLiveBlurStyles();
 
       dot.className = "w-2 h-2 rounded-full bg-gray-500";
       label.textContent = "Kamera starten";
@@ -2405,15 +2476,32 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
 
         content.push({
           type: "text",
-          text: `Du bist ein Dokumenten-Scanner für ein Empfangsterminal. Analysiere das/die obige(n) Bild(er) (Ausweis, Personalausweis, Reisepass, ID card, Führerschein).
-Lies die folgenden Felder präzise aus:
-- name: Vollständiger Vor- und Nachname der Person (z.B. "Johannes Müller")
-- birth_date: Geburtsdatum (z.B. "15.04.1985")
-- address: Anschrift / Wohnort (z.B. "Musterstraße 12, 80331 München")
-- document_type: Art des Dokuments (z.B. "Personalausweis", "Reisepass", "Führerschein")
+          text: `Du bist ein hochpräziser Dokumenten-Scanner für ein Empfangsterminal.
+Du analysierst die beigefügten Ausweisbilder (deutscher Personalausweis, ID-Karte oder Reisepass).
+
+WICHTIGER DOKUMENTEN-AUFBAU ZUR FEHLERVERMEIDUNG:
+
+1. BILD 1 ist die VORDERSEITE:
+   - Hier befindet sich der VOLLSTÄNDIGE NAME der Person:
+     * "Name" / Nachname (Familienname, z. B. 'Oberstraß' oder 'Müller').
+     * "Vornamen" (z. B. 'Arved Marvin' oder 'Johannes').
+     * WICHTIGER HINWEIS: Nachnamen wie 'Oberstraß', 'Steinweg', 'Bachmann' etc. sind Familiennamen und NIEMALS Adressen! Setze den Namen aus Vorname(n) und Nachname zusammen: z. B. "Arved Marvin Oberstraß".
+   - Hier befindet sich das GEBURTSDATUM ("Geburtstag", z. B. '29.10.1993').
+
+2. BILD 2 ist die RÜCKSEITE:
+   - Hier befindet sich die ANSCHRIFT / ADRESSE:
+     * Die Wohnadresse befindet sich AUSSCHLIESSLICH auf der Rückseite im Feld 'Anschrift' (oder Adressaufkleber)!
+     * Sie besteht aus Straße, Hausnummer, 5-stelliger PLZ und Ort (z. B. 'Musterstraße 12, 34127 Kassel').
+     * VERWECHSLUNG VERMEIDEN: Der Nachname der Person (z. B. 'Oberstraß') darf NIEMALS als Straßenname halluziniert werden! Lies nur den echten Straßennamen im Anschriftenfeld ab. Falls die Straße auf dem Bild unscharf ist, gib PLZ und Ort an oder null, aber erfinde keine Straße.
+   - In den 3 maschinenlesbaren Zeilen ganz unten (MRZ) ist der Nachname und Vorname ebenfalls kodiert (z. B. OBERSTRASS<<ARVED<MARVIN...).
 
 Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklärung:
-{"name": "...", "birth_date": "...", "address": "...", "document_type": "..."}`
+{
+  "name": "Vollständiger Vor- und Nachname",
+  "birth_date": "TT.MM.JJJJ",
+  "address": "Straße Hausnummer, PLZ Ort",
+  "document_type": "Personalausweis"
+}`
         });
 
         // max_tokens erhöht auf 4096 (viel Puffer für Reasoning + vollständiges JSON)
@@ -2638,6 +2726,7 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
     document.getElementById('btn-snap-front').addEventListener('click', captureFrontSide);
     document.getElementById('btn-snap-back').addEventListener('click', captureBackSide);
     document.getElementById('btn-toggle-blur').addEventListener('click', togglePassportBlur);
+    document.getElementById('btn-toggle-live-blur').addEventListener('click', toggleLiveBlur);
     document.getElementById('btn-analyze-passport').addEventListener('click', analyzePassportWithGemma);
 
     // Initiale Kamera-Geräteauflistung
