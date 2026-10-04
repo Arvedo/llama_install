@@ -2668,24 +2668,25 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
             state.masked_address = maskedAddr;
           }
 
-          // Fester Zweck: Er ist hier, um die KI zu installieren
-          state.reason = "KI-Installation";
-
           // Dynamischer Vorname für die Begrüßung
           const firstName = (state.name && state.name.trim()) ? state.name.trim().split(/\s+/)[0] : 'Besucher';
 
-          let welcomeMsg = `🪪 Guten Tag **${firstName}**! Schön, dass Sie da sind, um die KI zu installieren. Ihr Ausweis (**${state.name || firstName}**) wurde erfolgreich geprüft.`;
-          if (!state.company) {
-            welcomeMsg += ` Bitte nennen Sie mir noch kurz Ihre Firma (oder "privat"), um Ihren Besucherausweis fertigzustellen.`;
+          const missingLabels = [];
+          if (!state.company) missingLabels.push('Ihre Firma (oder "privat")');
+          if (!state.reason) missingLabels.push('den Grund Ihres Besuchs');
+
+          let welcomeMsg = `🪪 Guten Tag **${firstName}**! Ihr Ausweis (**${state.name || firstName}**) wurde erfolgreich erfasst.`;
+          if (missingLabels.length > 0) {
+            welcomeMsg += ` Bitte nennen Sie mir noch ${missingLabels.join(' und ')}.`;
           } else {
-            welcomeMsg += ` Ihre Firma (${state.company}) ist bereits hinterlegt. Der Besucherausweis wird gedruckt!`;
+            welcomeMsg += ` Alle Angaben sind vollständig erfasst. Ihr Besucherausweis wird gedruckt!`;
           }
 
           // 1:1 Synchronisation mit dem sichtbaren UI-Chatverlauf und dem Model-Chatverlauf
           appendUserMessage(`🪪 [Ausweis vorgelegt: ${parsed.document_type || 'Ausweis'} von ${state.name || 'Besucher'}]`);
           conversationHistory.push({
             role: "user",
-            content: `Ich lege meinen Ausweis vor. Mein Name ist ${state.name || 'unbekannt'}, Geburtsdatum: ${state.birth_date || 'k.A.'}. Grund meines Besuchs: KI-Installation.`
+            content: `Ich lege meinen Ausweis vor. Mein Name ist ${state.name || 'unbekannt'}, Geburtsdatum: ${state.birth_date || 'k.A.'}.`
           });
 
           appendAiMessage(welcomeMsg);
@@ -2696,15 +2697,14 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
               name: state.name,
               company: state.company,
               reason: state.reason,
-              status: state.company ? "complete" : "incomplete",
-              missing_fields: state.company ? [] : ["company"],
+              status: (state.name && state.company && state.reason) ? "complete" : "incomplete",
+              missing_fields: [!state.name && 'name', !state.company && 'company', !state.reason && 'reason'].filter(Boolean),
               followup_question: welcomeMsg
             })
           });
 
-          addTrackingLog('VISION_SUCCESS', 'Ausweisdaten verifiziert & Besuchsgrund KI-Installation gesetzt', {
+          addTrackingLog('VISION_SUCCESS', 'Ausweisdaten verifiziert', {
             name: state.name,
-            reason: state.reason,
             birth_date: state.birth_date,
             masked_address: state.masked_address,
             latency: latency + "ms"
