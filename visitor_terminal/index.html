@@ -604,7 +604,7 @@
             </div>
 
             <!-- Visitor Photo & Core Details Grid -->
-            <div class="flex gap-4 items-center mb-4">
+            <div class="flex gap-4 items-center mb-3">
               <div class="w-20 h-24 rounded-xl bg-gradient-to-tr from-gray-800 to-gray-700 text-white flex flex-col items-center justify-center p-2 shadow-md border-2 border-white shrink-0">
                 <svg class="w-10 h-10 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -618,6 +618,26 @@
 
                 <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-2">Firma / Herkunft</div>
                 <div id="pass-visitor-company" class="text-sm font-bold text-emerald-800 truncate">-- Noch keine Firma --</div>
+              </div>
+            </div>
+
+            <!-- Ausweis-Daten / DSGVO Datenschutz-Zone -->
+            <div id="pass-id-details-box" class="bg-gray-200/70 rounded-xl p-2.5 mb-3 border border-gray-300 text-xs">
+              <div class="flex items-center justify-between pb-1 mb-1 border-b border-gray-300/80">
+                <span class="text-[9px] font-mono uppercase font-black text-emerald-800 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> ID-Verifizierung &amp; Datenschutz
+                </span>
+                <span class="text-[9px] font-mono text-gray-500 font-bold">DSGVO REDACTED</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px]">
+                <div>
+                  <span class="text-[9px] font-bold text-gray-500 uppercase block">Geburtsdatum</span>
+                  <span id="pass-visitor-dob" class="font-mono font-bold text-gray-900 truncate block">--.--.----</span>
+                </div>
+                <div>
+                  <span class="text-[9px] font-bold text-gray-500 uppercase block">Anschrift (Maskiert)</span>
+                  <span id="pass-visitor-address" class="font-mono font-bold text-gray-900 truncate block" title="DSGVO-teilmaskierte Anschrift">--</span>
+                </div>
               </div>
             </div>
 
@@ -849,6 +869,10 @@
       name: null,
       company: null,
       reason: null,
+      birth_date: null,
+      address: null,
+      masked_address: null,
+      name_verified_by_passport: false,
       status: 'incomplete',
       missing_fields: ['name', 'company', 'reason'],
       followup_question: 'Guten Tag! Willkommen am Empfangsterminal. Bitte nennen Sie Ihren Namen, Ihre Firma (oder privat) und den Grund Ihres Besuchs.'
@@ -1169,6 +1193,10 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
         name: null,
         company: null,
         reason: null,
+        birth_date: null,
+        address: null,
+        masked_address: null,
+        name_verified_by_passport: false,
         status: 'incomplete',
         missing_fields: ['name', 'company', 'reason'],
         followup_question: 'Guten Tag! Willkommen am Empfangsterminal. Bitte nennen Sie Ihren Namen, Ihre Firma (oder privat) und den Grund Ihres Besuchs.'
@@ -1200,6 +1228,10 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       document.getElementById('pass-visitor-name').textContent = "-- Noch kein Name --";
       document.getElementById('pass-visitor-company').textContent = "-- Noch keine Firma --";
       document.getElementById('pass-visitor-reason').textContent = "-- Noch kein Grund --";
+      const pDob = document.getElementById('pass-visitor-dob');
+      if (pDob) pDob.textContent = "--.--.----";
+      const pAddr = document.getElementById('pass-visitor-address');
+      if (pAddr) pAddr.textContent = "--";
 
       // Reset text input
       const txtInput = document.getElementById('user-text-input');
@@ -1520,7 +1552,7 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       const totalStartTime = performance.now();
       document.getElementById('telemetry-latency').textContent = "🎧 Gemma verarbeitet Audio...";
 
-      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}`;
+      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}${state.name_verified_by_passport ? ' (PER AUSWEIS VERIFIZIERT - beibehalten, außer der Nutzer korrigiert seinen Namen explizit!)' : ''}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}${state.name_verified_by_passport && state.reason === 'KI-Installation' ? ' (Fester Zweck: KI-Installation)' : ''}`;
       const userPrompt = `${stateSummary}\n\nWICHTIG: Die Transkription ('transcription') MUSS IMMER zu 100% in der tatsächlich gesprochenen Originalsprache erfolgen (niemals übersetzen).\nHöre das beigefügte gesprochene Audio des Besuchers an und extrahiere die Pflichtfelder:`;
 
       addTrackingLog('AUDIO', 'Audio-Anfrage an Gemma gesendet', {
@@ -1622,7 +1654,7 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       const totalStartTime = performance.now();
       document.getElementById('telemetry-latency').textContent = "🧠 Gemma verarbeitet Eingabe...";
 
-      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}`;
+      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}${state.name_verified_by_passport ? ' (PER AUSWEIS VERIFIZIERT - beibehalten, außer der Nutzer korrigiert seinen Namen explizit!)' : ''}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}${state.name_verified_by_passport && state.reason === 'KI-Installation' ? ' (Fester Zweck: KI-Installation)' : ''}`;
       const userPrompt = `${stateSummary}\n\nNeue Benutzereingabe (Text): "${text}"`;
 
       addTrackingLog('TEXT', 'Text-Anfrage an Gemma gesendet', {
@@ -1696,14 +1728,44 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
     function applyExtraction(parsed, transcript) {
       if (!parsed) return;
 
+      // Check if user explicitly requests to correct or change their name
+      const isExplicitNameCorrection = Boolean(
+        transcript && (
+          /falsch(er)?\s*name/i.test(transcript) ||
+          /heiße\s+(eigentlich|nicht|doch)/i.test(transcript) ||
+          /name\s+(ist\s+falsch|stimmt\s+nicht|korrigier)/i.test(transcript) ||
+          /nicht\s+arved/i.test(transcript) ||
+          /mein\s+name\s+ist\s+(eigentlich|in\s+wirklichkeit)/i.test(transcript) ||
+          /ich\s+heiße\s+in\s+wirklichkeit/i.test(transcript) ||
+          /korrektur/i.test(transcript)
+        )
+      );
+
+      // Name-Schutz: Name vom Ausweis hat absolute Priorität, außer bei expliziter Korrektur
       if (parsed.name && parsed.name !== 'null' && parsed.name !== 'unbekannt' && parsed.name.trim() !== '') {
-        state.name = parsed.name.trim();
+        if (!state.name_verified_by_passport || isExplicitNameCorrection) {
+          state.name = parsed.name.trim();
+          if (isExplicitNameCorrection) {
+            state.name_verified_by_passport = false;
+            addTrackingLog('NAME_OVERRIDE', 'Ausweisname durch explizite Nutzerkorrektur überschrieben', { newName: state.name });
+          }
+        } else {
+          addTrackingLog('NAME_PROTECTED', 'Ausweisname geschützt vor STT-Überschreibung', {
+            keptName: state.name,
+            ignoredSttName: parsed.name
+          });
+        }
       }
+
       if (parsed.company && parsed.company !== 'null' && parsed.company !== 'unbekannt' && parsed.company.trim() !== '') {
         state.company = parsed.company.trim();
       }
+
       if (parsed.reason && parsed.reason !== 'null' && parsed.reason !== 'unbekannt' && parsed.reason.trim() !== '') {
-        state.reason = parsed.reason.trim();
+        // Falls Grund noch nicht erfasst oder wenn kein verifizierter Grund durch Ausweis gesetzt ist
+        if (!state.reason || !state.name_verified_by_passport) {
+          state.reason = parsed.reason.trim();
+        }
       }
       if (transcript) {
         state.transcription = transcript;
@@ -1762,7 +1824,7 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       if (state.name) {
         cardName.className = "p-3.5 rounded-xl border border-emerald-500/50 bg-emerald-950/20 shadow-lg shadow-emerald-950/40 transition-all duration-300";
         badgeName.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-        badgeName.textContent = "✓ ERFASST";
+        badgeName.textContent = state.name_verified_by_passport ? "🪪 AUSWEIS VERIFIZIERT" : "✓ ERFASST";
         valName.className = "text-base font-bold text-white";
         valName.textContent = state.name;
       } else {
@@ -1849,6 +1911,10 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
       document.getElementById('pass-visitor-name').textContent = state.name || 'Besucher';
       document.getElementById('pass-visitor-company').textContent = state.company || 'Privat';
       document.getElementById('pass-visitor-reason').textContent = state.reason || 'Besuch';
+      const passDob = document.getElementById('pass-visitor-dob');
+      if (passDob) passDob.textContent = state.birth_date || '--.--.----';
+      const passAddr = document.getElementById('pass-visitor-address');
+      if (passAddr) passAddr.textContent = state.masked_address || (state.address ? maskAddressForPrivacy(state.address) : '--');
 
       const now = new Date();
       const dateStr = now.toLocaleDateString('de-DE') + ' // ' + now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -2437,9 +2503,37 @@ Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
 
       const pBox = document.getElementById('passport-extracted-box');
       if (pBox) pBox.classList.add('hidden');
+      const nameEl = document.getElementById('pass-val-name');
+      if (nameEl) nameEl.textContent = '--';
+      const dobEl = document.getElementById('pass-val-dob');
+      if (dobEl) dobEl.textContent = '--';
+      const addrEl = document.getElementById('pass-val-addr');
+      if (addrEl) addrEl.textContent = '--';
 
       const pBtn = document.getElementById('btn-analyze-passport');
       if (pBtn) pBtn.disabled = true;
+    }
+
+    // DSGVO-konforme Teilmaskierung der Anschrift für Bildschirm und Besucherausweis
+    function maskAddressForPrivacy(addr) {
+      if (!addr || addr === '--' || addr === 'null' || addr === 'k.A.') return '--';
+      // Wörter >= 4 Zeichen: erste 2 und letzte 1-2 Buchstaben behalten, Rest durch *
+      let masked = addr.replace(/\b([a-zA-ZäöüÄÖÜß]{4,})\b/g, (match) => {
+        const len = match.length;
+        if (len <= 4) return match[0] + '**' + match[len - 1];
+        const keepStart = 2;
+        const keepEnd = len > 5 ? 2 : 1;
+        const starCount = Math.max(2, len - keepStart - keepEnd);
+        return match.slice(0, keepStart) + '*'.repeat(starCount) + match.slice(-keepEnd);
+      });
+      // Ziffern (Hausnummer, PLZ): erste 1-2 Ziffern behalten, Rest durch *
+      masked = masked.replace(/\b(\d+)\b/g, (num) => {
+        if (num.length === 1) return num;
+        if (num.length === 2) return num[0] + '*';
+        if (num.length === 3) return num[0] + '**';
+        return num.slice(0, 2) + '*'.repeat(num.length - 2); // z.B. 34125 -> 34***
+      });
+      return masked;
     }
 
     async function analyzePassportWithGemma() {
@@ -2556,6 +2650,8 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
           const box = document.getElementById('passport-extracted-box');
           if (box) box.classList.remove('hidden');
 
+          const maskedAddr = maskAddressForPrivacy(parsed.address);
+
           const badgeEl = document.getElementById('passport-doc-type-badge');
           if (badgeEl) badgeEl.textContent = parsed.document_type || 'Ausweis';
           const nameEl = document.getElementById('pass-val-name');
@@ -2563,19 +2659,45 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
           const dobEl = document.getElementById('pass-val-dob');
           if (dobEl) dobEl.textContent = parsed.birth_date || '--';
           const addrEl = document.getElementById('pass-val-addr');
-          if (addrEl) addrEl.textContent = parsed.address || '--';
+          if (addrEl) addrEl.textContent = maskedAddr;
 
+          // Name vom Ausweis speichern & als verifiziert schützen
           if (parsed.name && parsed.name !== 'null' && parsed.name.trim() !== '') {
             state.name = parsed.name.trim();
-            renderStateUI();
+            state.name_verified_by_passport = true;
+          }
+          if (parsed.birth_date && parsed.birth_date !== 'null') {
+            state.birth_date = parsed.birth_date.trim();
+          }
+          if (parsed.address && parsed.address !== 'null') {
+            state.address = parsed.address.trim();
+            state.masked_address = maskedAddr;
           }
 
-          appendAiMessage(`🪪 Ausweis erfasst: **${parsed.name || 'Dokument'}** (${parsed.document_type || 'Ausweis'}). Geboren: ${parsed.birth_date || 'k.A.'}, Adresse: ${parsed.address || 'k.A.'}`);
-          addTrackingLog('VISION_SUCCESS', 'Ausweisdaten durch Gemma 4 extrahiert', {
-            parsed: parsed,
+          // Fester Zweck: Er ist hier, um die KI zu installieren
+          state.reason = "KI-Installation";
+
+          // Dynamischer Vorname für die Begrüßung
+          const firstName = (state.name && state.name.trim()) ? state.name.trim().split(/\s+/)[0] : 'Arved';
+
+          let welcomeMsg = `🪪 Guten Tag **${firstName}**! Schön, dass Sie da sind, um die KI zu installieren. Ihr Ausweis (**${state.name || firstName}**) wurde erfolgreich geprüft.`;
+          if (!state.company) {
+            welcomeMsg += ` Bitte nennen Sie mir noch kurz Ihre Firma (oder "privat"), um Ihren Besucherausweis fertigzustellen.`;
+          } else {
+            welcomeMsg += ` Ihre Firma (${state.company}) ist bereits hinterlegt. Der Besucherausweis wird gedruckt!`;
+          }
+
+          appendAiMessage(welcomeMsg);
+          addTrackingLog('VISION_SUCCESS', 'Ausweisdaten verifiziert & Besuchsgrund KI-Installation gesetzt', {
+            name: state.name,
+            reason: state.reason,
+            birth_date: state.birth_date,
+            masked_address: state.masked_address,
             latency: latency + "ms"
           });
           playSuccessChime();
+
+          renderStateUI();
         } else {
           appendAiMessage(`⚠️ Ausweis konnte nicht strukturiert gelesen werden: ${rawAnswer}`);
           addTrackingLog('VISION_WARN', 'Keine JSON-Struktur erkannt', { raw: rawAnswer });
