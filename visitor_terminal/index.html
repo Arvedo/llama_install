@@ -444,6 +444,8 @@
           </div>
           <div class="flex items-center gap-2 text-[10px] font-mono text-gray-400">
             <span id="telemetry-latency">Latenz: -- ms</span>
+            <span class="text-dark-600">•</span>
+            <span id="telemetry-tokens">-- Tokens</span>
           </div>
         </div>
 
@@ -2248,19 +2250,25 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format ohne Markdown und ohne Erklär
         }
 
         // Telemetrie aktualisieren
-        document.getElementById('telemetry-latency').textContent = `${latency} ms (Vision OCR)`;
-        document.getElementById('telemetry-tokens').textContent = (json.usage?.completion_tokens || 0) + " Tokens";
+        const latencyEl = document.getElementById('telemetry-latency');
+        if (latencyEl) latencyEl.textContent = `${latency} ms (Vision OCR)`;
+        const tokensEl = document.getElementById('telemetry-tokens');
+        if (tokensEl) tokensEl.textContent = (json.usage?.completion_tokens || 0) + " Tokens";
         const dotEl = document.getElementById('server-dot');
         if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0";
 
         if (parsed) {
           const box = document.getElementById('passport-extracted-box');
-          box.classList.remove('hidden');
+          if (box) box.classList.remove('hidden');
 
-          document.getElementById('passport-doc-type-badge').textContent = parsed.document_type || 'Ausweis';
-          document.getElementById('pass-val-name').textContent = parsed.name || '--';
-          document.getElementById('pass-val-dob').textContent = parsed.birth_date || '--';
-          document.getElementById('pass-val-addr').textContent = parsed.address || '--';
+          const badgeEl = document.getElementById('passport-doc-type-badge');
+          if (badgeEl) badgeEl.textContent = parsed.document_type || 'Ausweis';
+          const nameEl = document.getElementById('pass-val-name');
+          if (nameEl) nameEl.textContent = parsed.name || '--';
+          const dobEl = document.getElementById('pass-val-dob');
+          if (dobEl) dobEl.textContent = parsed.birth_date || '--';
+          const addrEl = document.getElementById('pass-val-addr');
+          if (addrEl) addrEl.textContent = parsed.address || '--';
 
           if (parsed.name && parsed.name !== 'null' && parsed.name.trim() !== '') {
             state.name = parsed.name.trim();
