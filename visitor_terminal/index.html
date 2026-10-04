@@ -1,0 +1,2442 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KI-Empfangsterminal // Pure Gemma STT & Extraktion</title>
+  
+  <!-- Suppress CDN dev warning in presentation console -->
+  <script>
+    const _origWarn = console.warn;
+    console.warn = function(...args) {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+      _origWarn.apply(console, args);
+    };
+  </script>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Bahnschrift"', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['"Consolas"', '"Cascadia Code"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#10b981',
+              600: '#059669',
+            },
+            dark: {
+              900: '#090d16',
+              800: '#111827',
+              700: '#1f2937',
+              600: '#374151',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-mic {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+    .mic-recording {
+      animation: pulse-mic 1.5s infinite;
+      background-color: #ef4444 !important;
+    }
+    @keyframes print-slide {
+      0% { transform: translateY(-40px) scale(0.95); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .badge-printing {
+      animation: print-slide 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 50%;
+        top: 20px;
+        transform: translateX(-50%);
+        width: 85mm;
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <!-- Preloaded offline sample audio -->
+  <script src="sample_audio_data.js"></script>
+</head>
+<body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-white">
+
+  <!-- file:// Origin Warning Banner (if opened directly without server) -->
+  <div id="file-origin-banner" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-6 py-2 text-xs text-amber-300 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <span>Tipp für beste Performance: Starte <strong class="font-mono text-white">START_VISITOR_TERMINAL_DEMO.bat</strong> (öffnet die App auf <span class="font-mono text-emerald-400">http://localhost:3000</span> für uneingeschränkte Mikrofon-Rechte).</span>
+    </div>
+    <button onclick="document.getElementById('file-origin-banner').classList.add('hidden')" class="text-amber-400 hover:text-white font-bold">&times;</button>
+  </div>
+
+  <!-- Top Header Bar -->
+  <header class="border-b border-dark-700 bg-dark-800/80 backdrop-blur sticky top-0 z-50 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-bold tracking-tight text-white uppercase">AI-Besucherterminal</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono">PURE GEMMA STT</span>
+          </div>
+          <p class="text-xs text-gray-400">Audio-Transkription &amp; Extraktion <span class="text-emerald-400 font-semibold font-mono">100% nativ durch Gemma 4</span> • <span class="text-cyan-300 font-semibold">🌍 Multilingual</span>: Name &amp; Firma bleiben original, Grund wird automatisch ins Deutsche übersetzt</p>
+        </div>
+      </div>
+
+      <!-- Live Indicators (Fixed Port 8080) -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <div class="flex items-center gap-2 bg-dark-900/90 px-3 py-1.5 rounded-xl border border-dark-700 text-xs shadow-inner">
+          <span id="server-dot" class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+          <span class="font-mono text-gray-300 text-xs">http://127.0.0.1:8080</span>
+          <button id="btn-check-server" title="Server-Status prüfen / Neu laden" class="px-2 py-0.5 rounded bg-dark-800 hover:bg-dark-700 text-gray-300 hover:text-white border border-dark-700 transition cursor-pointer flex items-center gap-1 text-xs font-mono">
+            <svg class="w-3 h-3 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Neu laden</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 bg-dark-900/80 px-2.5 py-1.5 rounded-lg border border-dark-700 text-xs font-mono text-cyan-300">
+          <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span id="clock-display">--:--:--</span>
+        </div>
+        <button id="btn-open-translator" title="Schnell-Übersetzer öffnen" class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-blue-500/10 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+          </svg>
+          <span>🌐 Übersetzen (DE / EN)</span>
+        </button>
+        <button id="btn-reset-all" title="Zurücksetzen" class="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Neuer Besucher
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Column 1: Interactive Terminal (4 Cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-5">
+      
+      <!-- Terminal Kiosk Screen -->
+      <div class="bg-dark-800 border border-dark-700 rounded-2xl p-5 shadow-2xl flex flex-col flex-1 relative overflow-hidden">
+        
+        <!-- Reset Notification Toast -->
+        <div id="reset-toast" class="hidden absolute top-2 left-4 right-4 z-30 bg-emerald-500 text-gray-950 font-bold text-xs py-2 px-3.5 rounded-xl shadow-2xl flex items-center justify-between border border-emerald-400">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-950" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            <span>Neuer Besucher aktiv: Alle Daten &amp; Chat geleert!</span>
+          </div>
+          <span class="text-[10px] font-mono font-black uppercase bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded">RESET OK</span>
+        </div>
+
+        <div class="flex items-center justify-between border-b border-dark-700/80 pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span>
+            <span class="text-sm font-semibold tracking-wide text-gray-200 uppercase">Empfangs-Dialog</span>
+            <span id="chat-session-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-dark-900 text-emerald-400 border border-dark-700 font-bold">Sitzung #1</span>
+          </div>
+          <button id="btn-dialog-new-session" title="Sitzung leeren & neuen Dialog starten" class="text-xs font-mono px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Neuer Besucher</span>
+          </button>
+        </div>
+
+        <!-- Dialog Messages Container -->
+        <div id="chat-history" class="flex-1 overflow-y-auto space-y-3.5 pr-1 min-h-[220px] max-h-[340px]">
+          <!-- Initial Terminal Welcome -->
+          <div class="flex items-start gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 text-xs font-bold">
+              AI
+            </div>
+            <div class="bg-dark-700/80 border border-dark-600 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-200">
+              Guten Tag! Sprechen Sie ins Mikrofon. Das <strong>Gemma-Modell transkribiert Ihr Audio direkt</strong> und extrahiert Name, Firma und Grund.
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Live Equalizer Visualizer (Hardware-Accelerated Canvas Engine) -->
+        <div id="audio-status-box" class="mt-3 p-3 bg-dark-900/90 border border-dark-700 rounded-xl shadow-xl transition-all">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span id="recording-dot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></span>
+              <span id="audio-status-label" class="text-xs font-bold text-gray-300">Mikrofon bereit</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="audio-signal-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-dark-800 text-gray-400 border border-dark-700 flex items-center gap-1">
+                <span>⚪ Bereit</span>
+              </span>
+              <span id="recording-timer" class="font-mono text-xs font-bold text-gray-400 bg-dark-800 px-2 py-0.5 rounded border border-dark-700">00:00</span>
+            </div>
+          </div>
+
+          <!-- Hardware-Accelerated 2D Canvas Equalizer (32 Smooth Animated Bars) -->
+          <div class="bg-dark-950 rounded-lg p-2 border border-dark-700/80 flex flex-col gap-1.5">
+            <canvas id="live-visualizer-canvas" width="380" height="56" class="w-full h-14 bg-dark-950 rounded block"></canvas>
+            <div class="flex items-center justify-between text-[10px] font-mono text-gray-400 px-1 pt-1 border-t border-dark-800/80">
+              <span class="text-emerald-400/80 font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                LIVE AUDIO-EQUALIZER
+              </span>
+              <span id="visualizer-hint" class="text-gray-400">Sprich ins Mikrofon — Pegel schlägt live aus</span>
+              <span id="audio-peak-db" class="text-gray-400 font-mono">0 dB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="mt-4 pt-3 border-t border-dark-700">
+          
+          <!-- Voice Record Button (Streams directly to Gemma via AudioWorklet) -->
+          <div class="flex items-center gap-2 mb-3">
+            <button id="btn-mic" class="flex-1 py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-600/20 transition cursor-pointer select-none">
+              <svg id="mic-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+              <span id="mic-label">Sprache aufnehmen (Gemma STT)</span>
+            </button>
+
+            <!-- Audio File Upload (e.g. speech.wav) -->
+            <label title="WAV / MP3 Datei an Gemma senden" class="px-3.5 py-3.5 rounded-xl bg-dark-700 hover:bg-dark-600 border border-dark-600 text-gray-300 transition cursor-pointer flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <input type="file" id="audio-file-input" accept="audio/*,.wav,.mp3" class="hidden" />
+            </label>
+          </div>
+
+          <!-- Fallback Text Input -->
+          <form id="text-input-form" class="flex gap-2">
+            <input 
+              type="text" 
+              id="user-text-input" 
+              placeholder="Oder Text tippen (z.B. 'Ich bin Johannes Müller')..." 
+              class="flex-1 bg-dark-900/90 border border-dark-600 rounded-xl px-3.5 py-2 text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition font-sans"
+            />
+            <button type="submit" id="btn-send-text" class="bg-dark-700 hover:bg-dark-600 border border-dark-600 px-3.5 py-2 rounded-xl text-gray-200 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick Demo Presets (With Audio Simulator) -->
+      <div class="bg-dark-800/60 border border-dark-700/80 rounded-xl p-4">
+        <div class="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider flex items-center justify-between">
+          <span>⚡ Präsentations-Schnelltests</span>
+          <span class="text-[10px] text-emerald-400">1-Klick Demo</span>
+        </div>
+        
+        <button id="btn-preset-reset-session" class="w-full mb-3 p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-300 font-bold text-xs flex items-center justify-center gap-2 transition">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>🔄 Frische Sitzung starten (Chat leeren)</span>
+        </button>
+
+        <!-- Multi-turn German demo -->
+        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>🇩🇪 2-Schritt Dialog (Deutsch)</span>
+          <span class="text-[9px] text-amber-400 font-mono">Turn 1 &rarr; Turn 2</span>
+        </div>
+        <div class="grid grid-cols-1 gap-1.5 text-xs mb-3">
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Hey, ich bin der Johannes.">
+            <div>
+              <span class="font-semibold text-amber-400 font-mono">Schritt 1:</span>
+              <span class="ml-1 text-gray-200">"Hey, ich bin der Johannes."</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Name (neu)</span>
+          </button>
+          
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-emerald-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="false"
+                  data-prompt="Ich bin der Dienstleister von der TechSolutions GmbH wegen der Serverwartung.">
+            <div>
+              <span class="font-semibold text-emerald-400 font-mono">Schritt 2:</span>
+              <span class="ml-1 text-gray-200">"Dienstleister von TechSolutions wegen Serverwartung."</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shrink-0">Ergänzen</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Hallo, ich bin Johannes von TechSolutions. Ich bin hier wegen der Serverwartung. Johannes Müller.">
+            <div>
+              <span class="font-semibold text-amber-400 font-mono">1 Satz komplett:</span>
+              <span class="ml-1 text-gray-200">"Johannes von TechSolutions... Johannes Müller"</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Müller</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-purple-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="john von konklusiv um kurz aufs klo zu gehen">
+            <div>
+              <span class="font-semibold text-purple-400 font-mono">Slang / Kurz:</span>
+              <span class="ml-1 text-gray-200">"john von konklusiv um kurz aufs klo zu gehen"</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 shrink-0">Slang</span>
+          </button>
+        </div>
+
+        <!-- Multilingual demo -->
+        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
+          <span>🌍 Multilingual (Grund &rarr; Deutsch)</span>
+          <span class="text-[9px] text-blue-400 font-mono">Auto-Translation</span>
+        </div>
+        <div class="grid grid-cols-1 gap-1.5 text-xs mb-3">
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-emerald-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Hello, I'm John. I'm here for the internship and I'm from Microsoft.">
+            <div class="truncate mr-2">
+              <span class="font-semibold text-emerald-400 font-mono">🇬🇧 EN:</span>
+              <span class="ml-1 text-gray-200 truncate">"John from Microsoft for internship"</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 shrink-0">Praktikum</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-blue-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Hello, my name is John Smith from Acme Corp for the quarterly security audit.">
+            <div class="truncate mr-2">
+              <span class="font-semibold text-blue-400 font-mono">🇬🇧 EN:</span>
+              <span class="ml-1 text-gray-200 truncate">"John Smith from Acme Corp for security audit"</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20 shrink-0">Audit</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-indigo-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Bonjour, je m'appelle Pierre Dubois de Renault pour la maintenance du système.">
+            <div class="truncate mr-2">
+              <span class="font-semibold text-indigo-400 font-mono">🇫🇷 FR:</span>
+              <span class="ml-1 text-gray-200 truncate">"Pierre Dubois de Renault pour la maintenance"</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 shrink-0">Wartung</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-purple-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Hola, soy Alejandro Garcia de Iberdrola para la reparación de los servidores.">
+            <div class="truncate mr-2">
+              <span class="font-semibold text-purple-400 font-mono">🇪🇸 ES:</span>
+              <span class="ml-1 text-gray-200 truncate">"Alejandro Garcia de Iberdrola para reparación"</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 shrink-0">Reparatur</span>
+          </button>
+
+          <button class="preset-btn text-left p-2 rounded-lg bg-dark-900/70 hover:bg-dark-900 border border-dark-700 hover:border-amber-500/50 text-gray-300 transition flex items-center justify-between"
+                  data-reset="true"
+                  data-prompt="Buongiorno, sono Pietro Rossi di Tech Solutions per una consultazione dell'hardware.">
+            <div class="truncate mr-2">
+              <span class="font-semibold text-amber-400 font-mono">🇮🇹 IT:</span>
+              <span class="ml-1 text-gray-200 truncate">"Pietro Rossi di Tech Solutions (Hardware)"</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">Beratung</span>
+          </button>
+        </div>
+
+        <!-- Audio Demo -->
+        <div class="text-[10px] font-mono text-gray-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
+          <span>🎙️ Echte Audio-Inferenz (Multimodal)</span>
+        </div>
+        <button id="btn-load-sample-wav" class="w-full text-left p-2 rounded-lg bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-500/30 hover:border-emerald-500 text-gray-200 transition flex items-center justify-between text-xs">
+          <div>
+            <span class="font-semibold text-emerald-400 font-mono">Test-Audio:</span>
+            <span class="ml-1 text-gray-200">speech.wav ("Johannes Müller von Siemens")</span>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">WAV PCM</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Column 2: JSON Harness & Live Field Tracker (4 Cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-5">
+      
+      <!-- 3 Field Cards: Visual Target Extraction -->
+      <div class="bg-dark-800 border border-dark-700 rounded-2xl p-5 shadow-2xl flex flex-col gap-3">
+        <div class="flex items-center justify-between border-b border-dark-700 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Extraktions-Harness</span>
+            <span id="badge-overall-status" class="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              INCOMPLETE (0/3)
+            </span>
+          </div>
+          <span class="text-[11px] text-gray-400 font-mono">Gemma 4 Slot-Filler</span>
+        </div>
+
+        <!-- Field 1: Name -->
+        <div id="card-field-name" class="p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">1. name (Vollständiger Name)</span>
+            <span id="badge-name" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+              FEHLT / MISSING
+            </span>
+          </div>
+          <div id="val-name" class="text-base font-bold text-gray-400 italic">
+            -- Noch nicht genannt --
+          </div>
+          <div class="mt-1 text-[11px] text-gray-500">Hinweis: Bleibt im Original unübersetzt.</div>
+        </div>
+
+        <!-- Field 2: Company -->
+        <div id="card-field-company" class="p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">2. company (Firma / Organisation)</span>
+            <span id="badge-company" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+              FEHLT / MISSING
+            </span>
+          </div>
+          <div id="val-company" class="text-base font-bold text-gray-400 italic">
+            -- Noch nicht genannt --
+          </div>
+          <div class="mt-1 text-[11px] text-gray-500">Hinweis: Bleibt im Original (oder "Privat").</div>
+        </div>
+
+        <!-- Field 3: Reason -->
+        <div id="card-field-reason" class="p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300">
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">3. reason (Besuchszweck)</span>
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">DE</span>
+            </div>
+            <span id="badge-reason" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+              FEHLT / MISSING
+            </span>
+          </div>
+          <div id="val-reason" class="text-base font-bold text-gray-400 italic">
+            -- Noch nicht genannt --
+          </div>
+          <div class="mt-1.5 flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono">
+            <span>🌍</span>
+            <span>Wird aus jeder Sprache automatisch ins Deutsche übersetzt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live JSON Inspector & Performance Telemetry & Live Tracking -->
+      <div class="bg-dark-800 border border-dark-700 rounded-2xl p-5 shadow-2xl flex-1 flex flex-col">
+        <div class="flex items-center justify-between border-b border-dark-700 pb-2.5 mb-3">
+          <div class="flex items-center gap-1.5">
+            <button id="tab-btn-json" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer">
+              Live JSON
+            </button>
+            <button id="tab-btn-tracking" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-dark-700 text-gray-400 border border-dark-600 hover:text-gray-200 cursor-pointer flex items-center gap-1.5">
+              <span>🔍 Tracking & Logs</span>
+              <span id="tracking-counter-badge" class="px-1.5 py-0.2 rounded-full text-[9px] bg-dark-900 text-emerald-400 font-mono">0</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-2 text-[10px] font-mono text-gray-400">
+            <span id="telemetry-latency">Latenz: -- ms</span>
+          </div>
+        </div>
+
+        <!-- View 1: JSON Output -->
+        <pre id="json-viewer" class="flex-1 bg-dark-900 p-3.5 rounded-xl border border-dark-700 text-xs font-mono text-emerald-300 overflow-x-auto selection:bg-emerald-800 leading-relaxed min-h-[170px]">{
+  "transcription": null,
+  "name": null,
+  "company": null,
+  "reason": null,
+  "status": "incomplete",
+  "missing_fields": ["name", "company", "reason"],
+  "followup_question": "Guten Tag! Bitte nennen Sie Ihren Namen..."
+}</pre>
+
+        <!-- View 2: Live Tracking & Debug Logs (Hidden by default) -->
+        <div id="tracking-view" class="hidden flex-1 flex flex-col min-h-[170px]">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono text-gray-400">Echtzeit-Audit & API-Entscheidungen:</span>
+            <button id="btn-copy-tracking" class="text-[10px] font-mono px-2 py-0.5 rounded bg-dark-700 hover:bg-dark-600 text-gray-300 border border-dark-600 transition flex items-center gap-1">
+              📋 Logs kopieren
+            </button>
+          </div>
+          <div id="tracking-log-container" class="flex-1 bg-dark-900 p-2.5 rounded-xl border border-dark-700 text-xs font-mono overflow-y-auto max-h-[220px] flex flex-col gap-2">
+            <div class="text-gray-500 italic text-[11px]">Noch keine Events aufgezeichnet. Sprechen oder schreiben Sie etwas.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Column 3: The Printed Visitor Pass (4 Cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-5">
+      
+      <div class="bg-dark-800 border border-dark-700 rounded-2xl p-5 shadow-2xl flex flex-col flex-1">
+        <div class="flex items-center justify-between border-b border-dark-700 pb-3 mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold tracking-wide text-gray-200 uppercase">Besucherausweis</span>
+          </div>
+          <span id="badge-print-indicator" class="text-xs font-mono px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+            Warten auf Freigabe
+          </span>
+        </div>
+
+        <!-- The Physical Badge Card Container -->
+        <div class="flex-1 flex flex-col items-center justify-center min-h-[360px] p-2 relative">
+          
+          <!-- Locked / Placeholder Screen -->
+          <div id="badge-placeholder" class="text-center p-6 border-2 border-dashed border-dark-700 rounded-2xl flex flex-col items-center justify-center text-gray-500 max-w-xs">
+            <div class="w-16 h-16 rounded-full bg-dark-900 border border-dark-700 flex items-center justify-center mb-3 text-gray-600">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+              </svg>
+            </div>
+            <h3 class="text-sm font-bold text-gray-300 mb-1">Ausweis noch gesperrt</h3>
+            <p class="text-xs text-gray-500">Sobald alle 3 Felder vollständig erfasst wurden, wird der Ausweis hier automatisch gedruckt.</p>
+          </div>
+
+          <!-- The Real Printable Pass (Hidden until complete) -->
+          <div id="print-area" class="hidden w-full max-w-sm bg-gradient-to-b from-gray-50 to-gray-100 text-gray-900 rounded-2xl p-5 shadow-2xl border-2 border-gray-300 relative overflow-hidden badge-printing">
+            
+            <!-- Lanyard Clip Notch Graphic -->
+            <div class="w-16 h-2 bg-gray-400 rounded-full mx-auto mb-3 shadow-inner"></div>
+
+            <!-- Top Security Header -->
+            <div class="flex items-center justify-between border-b-2 border-gray-900/20 pb-3 mb-4">
+              <div>
+                <div class="text-[10px] font-mono tracking-widest text-emerald-700 uppercase font-black">SECURITY SYSTEM</div>
+                <div class="text-base font-black tracking-tight text-gray-900 uppercase">BESUCHERAUSWEIS</div>
+              </div>
+              <div class="text-right">
+                <span class="inline-block px-2 py-0.5 rounded bg-emerald-600 text-white font-mono text-[10px] font-bold">
+                  GÜLTIG
+                </span>
+                <div id="pass-id-display" class="text-[10px] font-mono text-gray-600 mt-0.5">VIS-78219</div>
+              </div>
+            </div>
+
+            <!-- Visitor Photo & Core Details Grid -->
+            <div class="flex gap-4 items-center mb-4">
+              <div class="w-20 h-24 rounded-xl bg-gradient-to-tr from-gray-800 to-gray-700 text-white flex flex-col items-center justify-center p-2 shadow-md border-2 border-white shrink-0">
+                <svg class="w-10 h-10 text-gray-300 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-wider">VISITOR</span>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Name des Besuchers</div>
+                <div id="pass-visitor-name" class="text-lg font-black text-gray-900 truncate tracking-tight">-- Noch kein Name --</div>
+
+                <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mt-2">Firma / Herkunft</div>
+                <div id="pass-visitor-company" class="text-sm font-bold text-emerald-800 truncate">-- Noch keine Firma --</div>
+              </div>
+            </div>
+
+            <!-- Purpose & Security Zone -->
+            <div class="bg-gray-200/80 rounded-xl p-3 mb-4 border border-gray-300">
+              <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Grund des Besuchs</div>
+              <div id="pass-visitor-reason" class="text-sm font-semibold text-gray-800">-- Noch kein Grund --</div>
+              <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-300/80 text-[10px] text-gray-600">
+                <span>ZUGANGSZONE: <strong class="text-gray-900">EBENE 2 (GELB)</strong></span>
+                <span id="pass-date-time">--.--.---- // --:--</span>
+              </div>
+            </div>
+
+            <!-- Bottom QR Code & Barcode Section -->
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <svg id="pass-qr" class="w-14 h-14 bg-white p-1 rounded-lg border border-gray-300" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M2 2h8v8H2zM4 4v4h4V4zM14 2h8v8h-8zM16 4v4h4V4zM2 14h8v8H2zM4 16v4h4v-4zM14 14h3v3h-3zM19 14h3v3h-3zM14 19h3v3h-3zM19 19h3v3h-3z" />
+                </svg>
+                <div class="text-[9px] text-gray-500 leading-tight">
+                  Ausweis sichtbar tragen.<br>Beim Verlassen am<br>Terminal abmelden.
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] font-mono text-gray-500">Gültigkeit:</div>
+                <div class="text-xs font-mono font-bold text-red-600">HEUTE, BIS 18:00</div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Action Print Button -->
+        <div class="mt-4 pt-3 border-t border-dark-700 flex gap-2">
+          <button id="btn-print-pass" disabled class="flex-1 py-2.5 px-4 rounded-xl bg-dark-700 text-gray-400 font-bold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span>Ausweis drucken (PDF)</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Translation Modal Popup ("Übersetzen-Ding") -->
+  <div id="translator-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/60">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white font-bold">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span>Schnell-Übersetzer // Parallel DE &amp; EN</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono">PURE GEMMA</span>
+            </h2>
+            <p class="text-xs text-gray-400">Sprich in beliebiger Sprache — Gemma transkribiert und übersetzt live parallel auf Deutsch &amp; Englisch</p>
+          </div>
+        </div>
+        <button id="btn-close-translator" class="w-8 h-8 rounded-lg bg-dark-700 hover:bg-dark-600 text-gray-400 hover:text-white flex items-center justify-center transition text-lg font-bold cursor-pointer">
+          &times;
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-5">
+        
+        <!-- Audio Recording Control Box -->
+        <div class="p-4 bg-dark-900/90 border border-dark-700 rounded-xl space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="trans-recording-dot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></span>
+              <span id="trans-audio-status" class="text-xs font-bold text-gray-200">Mikrofon bereit</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="trans-signal-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-dark-800 text-gray-400 border border-dark-700">
+                ⚪ Bereit
+              </span>
+              <span id="trans-recording-timer" class="font-mono text-xs font-bold text-gray-400 bg-dark-800 px-2 py-0.5 rounded border border-dark-700">00:00</span>
+            </div>
+          </div>
+
+          <!-- Translation Live Visualizer Canvas -->
+          <canvas id="trans-visualizer-canvas" width="580" height="52" class="w-full h-13 bg-dark-950 rounded-lg border border-dark-800 block shadow-inner"></canvas>
+
+          <!-- Actions Bar -->
+          <div class="flex items-center gap-3 pt-1">
+            <button id="btn-trans-mic" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 transition cursor-pointer select-none">
+              <svg id="trans-mic-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+              <span id="trans-mic-label">Sprache aufnehmen &amp; übersetzen</span>
+            </button>
+            
+            <label title="WAV / MP3 Datei zum Übersetzen hochladen" class="px-3.5 py-3 rounded-xl bg-dark-700 hover:bg-dark-600 border border-dark-600 text-gray-300 transition cursor-pointer flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <input type="file" id="trans-file-input" accept="audio/*,.wav,.mp3" class="hidden" />
+            </label>
+          </div>
+
+          <!-- Optional Text Input Fallback -->
+          <form id="trans-text-form" class="flex gap-2 pt-1">
+            <input 
+              type="text" 
+              id="trans-text-input" 
+              placeholder="Oder Satz eintippen (z. B. 'Bonjour, je suis ici pour réparer le serveur')..." 
+              class="flex-1 bg-dark-950 border border-dark-700 rounded-xl px-3.5 py-2 text-xs text-gray-100 placeholder-gray-500 focus:outline-none focus:border-blue-500 transition font-sans"
+            />
+            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-lg shadow-blue-600/30">
+              <span>🚀 Übersetzen</span>
+            </button>
+          </form>
+
+          <!-- Quick Test Chips -->
+          <div class="flex items-center gap-2 pt-0.5 overflow-x-auto text-[11px] font-mono text-gray-400">
+            <span class="text-gray-500 shrink-0">Schnelltests:</span>
+            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-purple-300 border border-dark-700 hover:border-purple-500/40 transition cursor-pointer shrink-0" data-text="Bonjour, je m'appelle Arved, ça va?">
+              🇫🇷 "Bonjour, je m'appelle Arved, ça va?"
+            </button>
+            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-emerald-300 border border-dark-700 hover:border-emerald-500/40 transition cursor-pointer shrink-0" data-text="Guten Tag, mein Name ist Johannes von Caric Solutions, ich bin hier für die Serverwartung.">
+              🇩🇪 "Guten Tag, mein Name ist Johannes..."
+            </button>
+            <button type="button" class="trans-quick-test px-2.5 py-1 rounded bg-dark-800 hover:bg-dark-700 text-blue-300 border border-dark-700 hover:border-blue-500/40 transition cursor-pointer shrink-0" data-text="Hello, my name is John Smith, I am here for an interview and onboarding from Microsoft.">
+              🇬🇧 "Hello, I am John Smith..."
+            </button>
+          </div>
+        </div>
+
+        <!-- Output 1: Original Spoken Transcript -->
+        <div class="p-4 bg-dark-900/60 border border-dark-700 rounded-xl space-y-1.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono font-bold uppercase tracking-wider text-gray-400">🗣️ 1. Original-Transkription</span>
+              <span id="trans-lang-badge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-dark-800 text-cyan-300 border border-dark-700 font-semibold">
+                Sprache: Noch keine
+              </span>
+            </div>
+            <button id="btn-copy-orig" class="text-[11px] font-mono px-2 py-0.5 rounded bg-dark-800 hover:bg-dark-700 text-gray-300 border border-dark-700 transition cursor-pointer">
+              📋 Kopieren
+            </button>
+          </div>
+          <div id="trans-orig-text" class="text-sm font-medium text-gray-300 bg-dark-950/70 p-3 rounded-lg border border-dark-800 min-h-[48px] italic text-gray-400">
+            -- Noch keine Aufnahme getätigt. Sprechen Sie ins Mikrofon --
+          </div>
+        </div>
+
+        <!-- Output 2 & 3: Side-by-Side Dual Version (DE vs EN) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- German Version Card -->
+          <div class="p-4 bg-dark-900/60 border border-emerald-500/30 rounded-xl space-y-2 flex flex-col">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🇩🇪</span>
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">Deutsche Fassung</span>
+              </div>
+              <button id="btn-copy-de" class="text-[11px] font-mono px-2 py-0.5 rounded bg-dark-800 hover:bg-dark-700 text-emerald-300 border border-emerald-500/30 transition cursor-pointer">
+                📋 Kopieren
+              </button>
+            </div>
+            <div id="trans-de-text" class="flex-1 text-sm font-semibold text-gray-100 bg-dark-950/70 p-3.5 rounded-lg border border-dark-800 min-h-[64px] italic text-gray-400 leading-relaxed">
+              -- Deutsche Übersetzung erscheint hier --
+            </div>
+          </div>
+
+          <!-- English Version Card -->
+          <div class="p-4 bg-dark-900/60 border border-blue-500/30 rounded-xl space-y-2 flex flex-col">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🇬🇧</span>
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-400">English Version</span>
+              </div>
+              <button id="btn-copy-en" class="text-[11px] font-mono px-2 py-0.5 rounded bg-dark-800 hover:bg-dark-700 text-blue-300 border border-blue-500/30 transition cursor-pointer">
+                📋 Kopieren
+              </button>
+            </div>
+            <div id="trans-en-text" class="flex-1 text-sm font-semibold text-gray-100 bg-dark-950/70 p-3.5 rounded-lg border border-dark-800 min-h-[64px] italic text-gray-400 leading-relaxed">
+              -- English translation appears here --
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 border-t border-dark-700 bg-dark-900/60 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-gray-400 font-mono text-[11px]">
+          <span id="trans-latency">Bereit</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-trans-reset" class="px-3 py-1.5 rounded-lg bg-dark-700 hover:bg-dark-600 text-gray-300 font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <span>🔄 Neuer Satz / Widersprechen</span>
+          </button>
+          <button id="btn-trans-done" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold transition cursor-pointer">
+            Fertig
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Script Logic -->
+  <script>
+    // Check if opened as file://
+    if (window.location.protocol === 'file:') {
+      document.getElementById('file-origin-banner').classList.remove('hidden');
+    }
+
+    // --- Real Multi-Turn AI Chat Session State ---
+    let sessionCounter = 1;
+    let currentSessionId = "VIS-SESS-1001";
+    let conversationHistory = [];
+    let state = {
+      transcription: null,
+      name: null,
+      company: null,
+      reason: null,
+      status: 'incomplete',
+      missing_fields: ['name', 'company', 'reason'],
+      followup_question: 'Guten Tag! Willkommen am Empfangsterminal. Bitte nennen Sie Ihren Namen, Ihre Firma (oder privat) und den Grund Ihres Besuchs.'
+    };
+
+    let isRecording = false;
+    let audioContext = null;
+    let mediaStream = null;
+    let audioWorkletNode = null;
+    let fallbackScriptNode = null;
+    let analyserNode = null;
+    let visualizerAnimationId = null;
+    let pcmData = [];
+    let recordTimerInterval = null;
+    let recordStartTime = 0;
+    let passAlreadyPrinted = false;
+    let trackingLogs = [];
+    let trackingCounter = 0;
+    localStorage.removeItem('llama_endpoint_base');
+    const SERVER_URL = 'http://127.0.0.1:8080/v1/chat/completions';
+
+    // --- UNIFIED MULTIMODAL TERMINAL SYSTEM PROMPT ---
+    const TERMINAL_SYSTEM_PROMPT = `Du bist das intelligente Empfangsterminal eines Unternehmens.
+Besucher registrieren sich über Sprach- oder Texteingaben für einen Besucherausweis.
+
+Deine Aufgaben:
+1. TRANSKRIPTION ('transcription'):
+   - Die Transkription MUSS IMMER zu 100% in der tatsächlich gesprochenen ORIGINALSPRACHE erfolgen!
+   - Übersetze das Feld 'transcription' NIEMALS! Es gibt den gesprochenen Wortlaut exakt in der jeweiligen Ausgangssprache wieder (z. B. auf Deutsch bei deutscher Sprache, auf Englisch bei englischer Sprache, auf Französisch bei französischer Sprache, etc.).
+   - Erfinde NIEMALS Wörter oder Begrüßungen aus einer anderen Sprache (z. B. kein 'Hello' oder 'Good morning' bei deutscher Sprache)!
+
+2. EXTRAKTION DER 3 PFLICHTFELDER:
+   - 'name': Vollständiger Personenname (Vor- und/oder Nachname). Schneide Firmenzusätze wie 'von [Firma]' strikt ab (z. B. 'Johannes von Siemens' -> name = 'Johannes', company = 'Siemens'). Falls noch unbekannt: null.
+   - 'company': Firma oder Organisation des Besuchers (im Original unübersetzt; falls privat: 'Privat'). Falls noch unbekannt: null.
+   - 'reason': Grund des Besuchs. Übersetze den Grund IMMER VOLLSTÄNDIG ins DEUTSCHE (z. B. 'Serverwartung', 'Meeting', 'Vorstellungsgespräch', 'Lieferung'). Falls noch unbekannt: null.
+
+3. REGELN ZUM AKTUALISIEREN / NEUER BESUCHER:
+   - Wenn der Besucher einen neuen oder anderen Namen, eine andere Firma oder einen anderen Grund nennt (z. B. eine neue Vorstellung), überschreiben diese neuen Angaben den bisherigen Stand SOFORT und VOLLSTÄNDIG!
+   - Behalte bisherige Werte nur dann bei, wenn der Besucher in seiner neuen Eingabe nichts zu diesem Feld erwähnt.
+
+4. STATUS & RÜCKFRAGE:
+   - Falls noch mindestens ein Feld fehlt (null ist):
+     * 'status': 'incomplete'
+     * 'missing_fields': Liste der noch fehlenden Feldnamen
+     * 'followup_question': Eine kurze, freundliche und präzise Rückfrage auf Deutsch nach den noch fehlenden Angaben.
+   - Falls alle 3 Felder ('name', 'company', 'reason') vollständig sind:
+     * 'status': 'complete'
+     * 'missing_fields': []
+     * 'followup_question': 'Vielen Dank! Alle Angaben sind vollständig. Ihr Besucherausweis wird gedruckt.'
+
+Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
+{
+  "transcription": string,
+  "name": string | null,
+  "company": string | null,
+  "reason": string | null,
+  "status": "complete" | "incomplete",
+  "missing_fields": string[],
+  "followup_question": string
+}`;
+
+    // --- Audio Feedback (Web Audio API Chime only) ---
+    const fxAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq = 600, duration = 0.1, type = 'sine') {
+      try {
+        if (fxAudioCtx.state === 'suspended') fxAudioCtx.resume();
+        const osc = fxAudioCtx.createOscillator();
+        const gain = fxAudioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, fxAudioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, fxAudioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, fxAudioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(fxAudioCtx.destination);
+        osc.start();
+        osc.stop(fxAudioCtx.currentTime + duration);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function playSuccessChime() {
+      playBeep(523.25, 0.15, 'triangle');
+      setTimeout(() => playBeep(659.25, 0.15, 'triangle'), 120);
+      setTimeout(() => playBeep(783.99, 0.3, 'triangle'), 240);
+    }
+
+    function showResetToast() {
+      const toast = document.getElementById('reset-toast');
+      if (toast) {
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 2200);
+      }
+    }
+
+    // --- HARDWARE-ACCELERATED CANVAS EQUALIZER CONTROLLER ---
+    function createVisualizerController(canvasId, pillId, hintId, peakDbId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas ? canvas.getContext('2d') : null;
+      const pill = pillId ? document.getElementById(pillId) : null;
+      const hint = hintId ? document.getElementById(hintId) : null;
+      const peakEl = peakDbId ? document.getElementById(peakDbId) : null;
+
+      let animId = null;
+      let activeAnalyser = null;
+      const numBars = 32;
+      let peakBars = new Array(numBars).fill(0);
+      const peakDecay = 0.94;
+
+      function drawIdle() {
+        if (!canvas || !ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#030712';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Subtle baseline
+        const midY = Math.round(canvas.height / 2);
+        ctx.strokeStyle = '#1f2937';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(8, midY);
+        ctx.lineTo(canvas.width - 8, midY);
+        ctx.stroke();
+
+        // Mini idle ticks
+        const gap = 3;
+        const barWidth = Math.max(2, (canvas.width - (numBars + 1) * gap) / numBars);
+        for (let i = 0; i < numBars; i++) {
+          const x = gap + i * (barWidth + gap);
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(x, midY - 2, barWidth, 4);
+        }
+      }
+
+      function start(analyser) {
+        stop();
+        activeAnalyser = analyser;
+        if (!analyser || !canvas || !ctx) return;
+
+        const bufferLength = analyser.frequencyBinCount;
+        const freqData = new Uint8Array(bufferLength);
+        const timeData = new Uint8Array(bufferLength);
+        let hasSpoken = false;
+
+        function render() {
+          animId = requestAnimationFrame(render);
+          analyser.getByteFrequencyData(freqData);
+          analyser.getByteTimeDomainData(timeData);
+
+          // Compute real RMS audio energy from time domain
+          let sumSq = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            const v = (timeData[i] - 128) / 128;
+            sumSq += v * v;
+          }
+          const rms = Math.sqrt(sumSq / bufferLength);
+          const pct = Math.min(100, Math.round(rms * 340));
+          const db = rms > 0.0005 ? Math.max(-60, Math.round(20 * Math.log10(rms))) : -60;
+          const isSpeaking = rms > 0.018 || pct > 6;
+
+          if (peakEl) peakEl.textContent = `${db} dB`;
+
+          if (pill) {
+            if (isSpeaking) {
+              hasSpoken = true;
+              pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-500/60 flex items-center gap-1 animate-pulse";
+              pill.innerHTML = `<span>🟢 Stimme erkannt (${pct}%)</span>`;
+              if (hint) {
+                hint.textContent = "Mikrofon empfängt Sprache (Equalizer aktiv)";
+                hint.className = "text-emerald-300 font-semibold";
+              }
+            } else {
+              pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1";
+              pill.innerHTML = hasSpoken ? `<span>🟡 Pause (${pct}%)</span>` : `<span>⚪ Warten auf Stimme (${pct}%)</span>`;
+              if (hint) {
+                hint.textContent = "Sprich ins Mikrofon — Pegel schlägt live aus";
+                hint.className = "text-gray-400";
+              }
+            }
+          }
+
+          // Clear and draw equalizer frame
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = '#030712';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const gap = 3;
+          const barWidth = Math.max(2, (canvas.width - (numBars + 1) * gap) / numBars);
+          const voiceBins = Math.min(28, bufferLength);
+
+          for (let i = 0; i < numBars; i++) {
+            const bin = Math.min(Math.floor((i / numBars) * voiceBins), bufferLength - 1);
+            const val = freqData[bin] || 0;
+
+            // Non-linear amplitude scaling: normal conversation creates prominent 15-50px bouncing bars
+            const normalized = Math.min(1.0, Math.pow(val / 88, 0.72) * 1.15 + (isSpeaking ? 0.08 : 0.02));
+            const barHeight = Math.max(4, Math.round(normalized * (canvas.height - 8)));
+            const x = gap + i * (barWidth + gap);
+            const y = canvas.height - barHeight - 3;
+
+            // Peak hold calculation
+            if (barHeight > peakBars[i]) {
+              peakBars[i] = barHeight;
+            } else {
+              peakBars[i] = Math.max(4, peakBars[i] * peakDecay);
+            }
+
+            // High-visibility responsive gradient
+            const grad = ctx.createLinearGradient(0, canvas.height, 0, y);
+            if (barHeight >= (canvas.height * 0.75)) {
+              grad.addColorStop(0, '#059669'); // emerald
+              grad.addColorStop(0.55, '#06b6d4'); // cyan
+              grad.addColorStop(1, '#f59e0b'); // amber peak
+            } else if (barHeight >= (canvas.height * 0.35)) {
+              grad.addColorStop(0, '#047857');
+              grad.addColorStop(1, '#10b981');
+            } else {
+              grad.addColorStop(0, '#064e3b');
+              grad.addColorStop(1, '#059669');
+            }
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            if (ctx.roundRect) {
+              ctx.roundRect(x, y, barWidth, barHeight, [2, 2, 0, 0]);
+            } else {
+              ctx.rect(x, y, barWidth, barHeight);
+            }
+            ctx.fill();
+
+            // Peak cap dot
+            const peakY = canvas.height - peakBars[i] - 4;
+            ctx.fillStyle = peakBars[i] >= (canvas.height * 0.75) ? '#fbbf24' : '#34d399';
+            ctx.fillRect(x, Math.max(1, peakY), barWidth, 2);
+          }
+        }
+
+        render();
+      }
+
+      function stop() {
+        if (animId) {
+          cancelAnimationFrame(animId);
+          animId = null;
+        }
+        activeAnalyser = null;
+        peakBars.fill(0);
+        drawIdle();
+        if (pill) {
+          pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-dark-800 text-gray-400 border border-dark-700 flex items-center gap-1";
+          pill.innerHTML = `<span>⚪ Bereit</span>`;
+        }
+      }
+
+      drawIdle();
+      return { start, stop, drawIdle };
+    }
+
+    // Initialize terminal visualizer controller
+    const terminalVisualizer = createVisualizerController('live-visualizer-canvas', 'audio-signal-pill', 'visualizer-hint', 'audio-peak-db');
+
+    function resetAudioVisualizerToIdle() {
+      terminalVisualizer.stop();
+      const dot = document.getElementById('recording-dot');
+      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-gray-500";
+      const lbl = document.getElementById('audio-status-label');
+      if (lbl) lbl.textContent = "Mikrofon bereit";
+      const timer = document.getElementById('recording-timer');
+      if (timer) {
+        timer.textContent = "00:00";
+        timer.className = "font-mono text-xs font-bold text-gray-400 bg-dark-800 px-2 py-0.5 rounded border border-dark-700";
+      }
+      const peak = document.getElementById('audio-peak-db');
+      if (peak) peak.textContent = "0 dB";
+    }
+
+    // --- Fast, High-Fidelity Browser Resampling to 16,000 Hz ---
+    async function resampleTo16k(floatSamples, inputSampleRate) {
+      if (!floatSamples || floatSamples.length === 0) return new Float32Array(0);
+      if (inputSampleRate === 16000) return floatSamples;
+
+      const targetLength = Math.max(1, Math.round(floatSamples.length * 16000 / inputSampleRate));
+      const offlineCtx = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, targetLength, 16000);
+      const audioBuffer = offlineCtx.createBuffer(1, floatSamples.length, inputSampleRate);
+      audioBuffer.copyToChannel(floatSamples, 0);
+
+      const srcNode = offlineCtx.createBufferSource();
+      srcNode.buffer = audioBuffer;
+      srcNode.connect(offlineCtx.destination);
+      srcNode.start(0);
+
+      const renderedBuffer = await offlineCtx.startRendering();
+      return renderedBuffer.getChannelData(0);
+    }
+
+    // --- Start Clean New Session (Wipes All Past Context) ---
+    function startNewSession(playChimeSound = false) {
+      sessionCounter++;
+      currentSessionId = "VIS-" + Math.floor(10000 + Math.random() * 90000);
+      passAlreadyPrinted = false;
+      lastAudioBubble = null;
+      
+      const badge = document.getElementById('chat-session-badge');
+      if (badge) badge.textContent = `Sitzung #${sessionCounter}`;
+
+      // 100% Clean Conversation History
+      conversationHistory = [];
+
+      addTrackingLog('SESSION', `Neue Sitzung #${sessionCounter} gestartet (Zustand & Chat geleert)`, {
+        sessionId: currentSessionId
+      });
+
+      // 100% Clean Extraction State
+      state = {
+        transcription: null,
+        name: null,
+        company: null,
+        reason: null,
+        status: 'incomplete',
+        missing_fields: ['name', 'company', 'reason'],
+        followup_question: 'Guten Tag! Willkommen am Empfangsterminal. Bitte nennen Sie Ihren Namen, Ihre Firma (oder privat) und den Grund Ihres Besuchs.'
+      };
+
+      // Reset Empfangs-Dialog Chat History
+      const history = document.getElementById('chat-history');
+      history.innerHTML = `
+        <div class="flex items-start gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 text-xs font-bold">
+            AI
+          </div>
+          <div class="bg-dark-700/80 border border-dark-600 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-200">
+            Guten Tag! Willkommen am Empfangsterminal. Sprechen Sie ins Mikrofon oder schreiben Sie. Das <strong>Gemma-Modell</strong> führt mit Ihnen das Check-in durch.
+          </div>
+        </div>
+      `;
+
+      // Reset Pass DOM
+      document.getElementById('badge-placeholder').classList.remove('hidden');
+      document.getElementById('print-area').classList.add('hidden');
+      const printBtn = document.getElementById('btn-print-pass');
+      printBtn.disabled = true;
+      printBtn.className = "flex-1 py-2.5 px-4 rounded-xl bg-dark-700 text-gray-400 font-bold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed";
+
+      document.getElementById('badge-print-indicator').className = "text-xs font-mono px-2 py-0.5 rounded bg-gray-700 text-gray-300";
+      document.getElementById('badge-print-indicator').textContent = "Warten auf Freigabe";
+
+      document.getElementById('pass-visitor-name').textContent = "-- Noch kein Name --";
+      document.getElementById('pass-visitor-company').textContent = "-- Noch keine Firma --";
+      document.getElementById('pass-visitor-reason').textContent = "-- Noch kein Grund --";
+
+      // Reset text input
+      const txtInput = document.getElementById('user-text-input');
+      if (txtInput) txtInput.value = '';
+
+      renderStateUI();
+      resetAudioVisualizerToIdle();
+
+      if (playChimeSound) {
+        showResetToast();
+        playBeep(350, 0.1);
+      }
+    }
+
+    // --- Pure Direct Raw Microphone Recording with Native 16 kHz Resampling ---
+    async function startRecording() {
+      try {
+        pcmData = [];
+        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === 'suspended') {
+          await audioContext.resume();
+        }
+
+        const source = audioContext.createMediaStreamSource(mediaStream);
+
+        // High-sensitivity AnalyserNode
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 128;
+        analyserNode.smoothingTimeConstant = 0.35;
+        source.connect(analyserNode);
+
+        const muteGain = audioContext.createGain();
+        muteGain.gain.value = 0;
+        analyserNode.connect(muteGain);
+        muteGain.connect(audioContext.destination);
+
+        // Synchronous, 100% reliable ScriptProcessor audio collection
+        fallbackScriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+        fallbackScriptNode.onaudioprocess = (e) => {
+          if (!isRecording) return;
+          pcmData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        };
+        source.connect(fallbackScriptNode);
+        fallbackScriptNode.connect(muteGain);
+
+        isRecording = true;
+        terminalVisualizer.start(analyserNode);
+        playBeep(880, 0.1);
+
+        document.getElementById('btn-mic').classList.add('mic-recording');
+        document.getElementById('mic-label').textContent = "Aufnahme stoppen & an Gemma senden";
+        document.getElementById('recording-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-ping";
+        document.getElementById('audio-status-label').textContent = "Aufnahme aktiv... Bitte sprechen Sie.";
+        const timerEl = document.getElementById('recording-timer');
+        if (timerEl) {
+          timerEl.className = "font-mono text-xs font-bold text-emerald-300 bg-dark-800 px-2 py-0.5 rounded border border-emerald-500/40";
+        }
+
+        recordStartTime = Date.now();
+        recordTimerInterval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - recordStartTime) / 1000);
+          const m = String(Math.floor(elapsed / 60)).padStart(2, '0');
+          const s = String(elapsed % 60).padStart(2, '0');
+          if (timerEl) timerEl.textContent = `${m}:${s}`;
+        }, 500);
+
+      } catch (err) {
+        console.error("Microphone access error:", err);
+        alert("Mikrofon-Zugriff fehlgeschlagen:\n" + err.message + "\n\nÖffne http://localhost:3000 über 'START_VISITOR_TERMINAL_DEMO.bat'.");
+      }
+    }
+
+    async function stopRecording() {
+      if (!isRecording) return;
+      isRecording = false;
+      clearInterval(recordTimerInterval);
+
+      terminalVisualizer.stop();
+      if (analyserNode) {
+        try { analyserNode.disconnect(); } catch (e) {}
+        analyserNode = null;
+      }
+
+      document.getElementById('btn-mic').classList.remove('mic-recording');
+      document.getElementById('mic-label').textContent = "Sprache aufnehmen (Gemma STT)";
+      document.getElementById('audio-status-label').textContent = "🧠 Gemma transkribiert & analysiert Audio...";
+      document.getElementById('recording-dot').className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-spin";
+      const pill = document.getElementById('audio-signal-pill');
+      if (pill) {
+        pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1 animate-pulse";
+        pill.innerHTML = `<span>⚡ KI analysiert...</span>`;
+      }
+
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(t => t.stop());
+      }
+      if (fallbackScriptNode) {
+        try { fallbackScriptNode.disconnect(); } catch (e) {}
+        fallbackScriptNode = null;
+      }
+
+      try {
+        // Merge recorded PCM chunks
+        let totalLength = 0;
+        for (const chunk of pcmData) totalLength += chunk.length;
+        const mergedPcm = new Float32Array(totalLength);
+        let offset = 0;
+        for (const chunk of pcmData) {
+          mergedPcm.set(chunk, offset);
+          offset += chunk.length;
+        }
+
+        const nativeRate = (audioContext && audioContext.sampleRate) ? audioContext.sampleRate : 48000;
+        if (audioContext && audioContext.state !== 'closed') {
+          audioContext.close().catch(() => {});
+        }
+
+        // Ignore truly accidental taps (< 120ms)
+        if (totalLength < nativeRate * 0.12) {
+          resetAudioVisualizerToIdle();
+          return;
+        }
+
+        // RESAMPLE TO GEMMA'S NATIVE 16,000 Hz MONO FORMAT
+        const resampledPcm16k = await resampleTo16k(mergedPcm, nativeRate);
+        const durationSec = (resampledPcm16k.length / 16000).toFixed(2);
+        const wavBuffer = createWavBuffer(resampledPcm16k, 16000);
+        const base64Wav = bufferToBase64(wavBuffer);
+
+        appendAudioUserMessage("🎤 Audioaufnahme");
+
+        // Save recorded audio on disk via server logger
+        addTrackingLog('AUDIO_MIC_SAVED', `Mikrofon-Audio erfasst (${durationSec}s, 16000 Hz)`, {
+          originalSampleRate: nativeRate,
+          targetSampleRate: 16000,
+          samples: resampledPcm16k.length,
+          durationSeconds: durationSec,
+          audioBase64: base64Wav
+        });
+
+        await sendAudioToGemma(base64Wav, "wav", false);
+      } catch (err) {
+        console.error("Audio recording processing error:", err);
+        resetAudioVisualizerToIdle();
+      }
+    }
+
+    function toggleRecording() {
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
+    }
+
+    // Helper: Build standard uncompressed 16-bit PCM WAV byte buffer
+    function createWavBuffer(samples, sampleRate = 48000) {
+      const buffer = new ArrayBuffer(44 + samples.length * 2);
+      const view = new DataView(buffer);
+
+      function writeString(offset, string) {
+        for (let i = 0; i < string.length; i++) {
+          view.setUint8(offset + i, string.charCodeAt(i));
+        }
+      }
+
+      writeString(0, 'RIFF');
+      view.setUint32(4, 36 + samples.length * 2, true);
+      writeString(8, 'WAVE');
+      writeString(12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true); // PCM format
+      view.setUint16(22, 1, true); // 1 channel (mono)
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * 2, true); // Byte rate
+      view.setUint16(32, 2, true); // Block align
+      view.setUint16(34, 16, true); // Bits per sample
+      writeString(36, 'data');
+      view.setUint32(40, samples.length * 2, true);
+
+      // Float32 to 16-bit PCM
+      let index = 44;
+      for (let i = 0; i < samples.length; i++) {
+        let s = Math.max(-1, Math.min(1, samples[i]));
+        view.setInt16(index, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        index += 2;
+      }
+      return buffer;
+    }
+
+    function bufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return window.btoa(binary);
+    }
+
+    // --- Safe JSON Parsing Helper ---
+    function safeParseJson(raw) {
+      if (!raw) return null;
+      let text = String(raw).trim();
+      if (text.includes('```')) {
+        text = text.replace(/```(?:json)?([\s\S]*?)```/g, '$1').trim();
+      }
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        text = match[0];
+      }
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        console.warn("safeParseJson fallback parsing for:", text);
+        const obj = {};
+        const trMatch = text.match(/"transcription"\s*:\s*"([^"]+)"/);
+        if (trMatch) obj.transcription = trMatch[1];
+        const nmMatch = text.match(/"name"\s*:\s*"([^"]+)"/);
+        if (nmMatch) obj.name = nmMatch[1];
+        const cpMatch = text.match(/"company"\s*:\s*"([^"]+)"/);
+        if (cpMatch) obj.company = cpMatch[1];
+        const rsMatch = text.match(/"reason"\s*:\s*"([^"]+)"/);
+        if (rsMatch) obj.reason = rsMatch[1];
+        const stMatch = text.match(/"status"\s*:\s*"([^"]+)"/);
+        if (stMatch) obj.status = stMatch[1];
+        const fqMatch = text.match(/"followup_question"\s*:\s*"([^"]+)"/);
+        if (fqMatch) obj.followup_question = fqMatch[1];
+        const dlMatch = text.match(/"detected_language"\s*:\s*"([^"]+)"/);
+        if (dlMatch) obj.detected_language = dlMatch[1];
+        const gvMatch = text.match(/"german_version"\s*:\s*"([^"]+)"/);
+        if (gvMatch) obj.german_version = gvMatch[1];
+        const evMatch = text.match(/"english_version"\s*:\s*"([^"]+)"/);
+        if (evMatch) obj.english_version = evMatch[1];
+        return obj;
+      }
+    }
+
+    // --- Live Tracking Helpers ---
+    function addTrackingLog(stage, title, data) {
+      trackingCounter++;
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('de-DE') + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      const entry = { id: trackingCounter, time: timeStr, stage, title, data };
+      trackingLogs.unshift(entry);
+      if (trackingLogs.length > 50) trackingLogs.pop();
+      renderTrackingUI();
+
+      // Persist log to server disk (logs/terminal.log & logs/terminal_sessions.jsonl)
+      sendLogToServer(stage, title, data);
+    }
+
+    async function sendLogToServer(stage, title, data = {}) {
+      try {
+        const port = window.location.port || '3000';
+        const host = window.location.hostname || '127.0.0.1';
+        fetch(`http://${host}:${port}/api/log`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: currentSessionId,
+            stage: stage,
+            title: title,
+            details: data
+          })
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    function renderTrackingUI() {
+      const badge = document.getElementById('tracking-counter-badge');
+      if (badge) badge.textContent = trackingCounter;
+
+      const container = document.getElementById('tracking-log-container');
+      if (!container) return;
+
+      if (trackingLogs.length === 0) {
+        container.innerHTML = `<div class="text-gray-500 italic text-[11px]">Noch keine Events aufgezeichnet.</div>`;
+        return;
+      }
+
+      container.innerHTML = trackingLogs.map(log => {
+        let badgeColor = "bg-blue-500/20 text-blue-400 border-blue-500/30";
+        if (log.stage === 'STT') badgeColor = "bg-purple-500/20 text-purple-300 border-purple-500/30";
+        if (log.stage === 'EXTRACT') badgeColor = "bg-cyan-500/20 text-cyan-300 border-cyan-500/30";
+        if (log.stage === 'DECISION') badgeColor = "bg-amber-500/20 text-amber-300 border-amber-500/30";
+        if (log.stage === 'PRINT') badgeColor = "bg-emerald-500/20 text-emerald-400 border-emerald-500/40";
+        if (log.stage === 'ERROR') badgeColor = "bg-red-500/20 text-red-400 border-red-500/40";
+
+        const details = typeof log.data === 'object' ? JSON.stringify(log.data, null, 1) : String(log.data);
+        return `
+          <div class="p-2 rounded bg-dark-800 border border-dark-700/80 text-[11px]">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <div class="flex items-center gap-1.5">
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold border ${badgeColor}">${log.stage}</span>
+                <span class="font-bold text-gray-200">${escapeHtml(log.title)}</span>
+              </div>
+              <span class="text-[10px] text-gray-400 font-mono">${log.time}</span>
+            </div>
+            <pre class="text-[10px] text-gray-400 overflow-x-auto whitespace-pre-wrap font-mono bg-dark-900/60 p-1.5 rounded">${escapeHtml(details)}</pre>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- UNIFIED MULTIMODAL INFERENCE PIPELINE ---
+
+    // Send RAW Audio directly to Gemma
+    async function sendAudioToGemma(base64Audio, format = "wav", startNew = false) {
+      if (startNew || state.status === 'complete') {
+        startNewSession(false);
+      }
+
+      const totalStartTime = performance.now();
+      document.getElementById('telemetry-latency').textContent = "🎧 Gemma verarbeitet Audio...";
+
+      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}`;
+      const userPrompt = `${stateSummary}\n\nWICHTIG: Die Transkription ('transcription') MUSS IMMER zu 100% in der tatsächlich gesprochenen Originalsprache erfolgen (niemals übersetzen).\nHöre das beigefügte gesprochene Audio des Besuchers an und extrahiere die Pflichtfelder:`;
+
+      addTrackingLog('AUDIO', 'Audio-Anfrage an Gemma gesendet', {
+        format: format,
+        endpoint: SERVER_URL,
+        audioLengthBytes: base64Audio.length,
+        currentState: { name: state.name, company: state.company, reason: state.reason }
+      });
+
+      try {
+        const payload = {
+          messages: [
+            { role: "system", content: TERMINAL_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: userPrompt },
+                {
+                  type: "input_audio",
+                  input_audio: {
+                    data: base64Audio,
+                    format: format
+                  }
+                }
+              ]
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2048,
+          temperature: 0.1
+        };
+
+        const resp = await fetch(SERVER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const errBody = await resp.text();
+          throw new Error(`Server Error ${resp.status}: ${errBody || resp.statusText}`);
+        }
+
+        const data = await resp.json();
+        const dur = Math.round(performance.now() - totalStartTime);
+        document.getElementById('telemetry-latency').textContent = `Latenz: ${dur} ms (Gemma)`;
+
+        const dotEl = document.getElementById('server-dot');
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
+
+        const rawContent = data.choices[0]?.message?.content || '';
+        const reasoning = data.choices[0]?.message?.reasoning_content || '';
+        const parsed = safeParseJson(rawContent);
+
+        addTrackingLog('INFERENCE', `Inferenz fertig (${dur} ms)`, {
+          durationMs: dur,
+          rawResponse: rawContent,
+          reasoning: reasoning,
+          finishReason: data.choices[0]?.finish_reason,
+          parsedResult: parsed,
+          tokensUsed: data.usage || null
+        });
+
+        if (parsed) {
+          const transcript = parsed.transcription || "";
+          if (transcript) {
+            updateLastAudioTranscription(transcript);
+          } else {
+            updateLastAudioTranscription("Sprachnachricht verarbeitet");
+          }
+          applyExtraction(parsed, transcript);
+        } else if (rawContent) {
+          updateLastAudioTranscription("Sprachnachricht verarbeitet");
+          appendAiMessage(rawContent);
+        }
+      } catch (err) {
+        console.error("Audio inference error:", err);
+        addTrackingLog('ERROR', 'Inferenz Fehlgeschlagen', { error: err.message, endpoint: SERVER_URL });
+        document.getElementById('telemetry-latency').textContent = "Fehler bei Inferenz (Server auf 8080 prüfen)";
+        const dotEl = document.getElementById('server-dot');
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-red-500 shrink-0";
+      } finally {
+        resetAudioVisualizerToIdle();
+      }
+    }
+
+    // Send Text Input directly to Gemma
+    async function processTextInput(userText, startNew = false) {
+      if (!userText || !userText.trim()) return;
+
+      if (startNew || state.status === 'complete') {
+        startNewSession(false);
+      }
+
+      const text = userText.trim();
+      appendUserMessage(text);
+      playBeep(440, 0.08);
+
+      const totalStartTime = performance.now();
+      document.getElementById('telemetry-latency').textContent = "🧠 Gemma verarbeitet Eingabe...";
+
+      const stateSummary = `Bisheriger Stand:\n- Name: ${state.name || 'null'}\n- Firma: ${state.company || 'null'}\n- Grund: ${state.reason || 'null'}`;
+      const userPrompt = `${stateSummary}\n\nNeue Benutzereingabe (Text): "${text}"`;
+
+      addTrackingLog('TEXT', 'Text-Anfrage an Gemma gesendet', {
+        inputText: text,
+        endpoint: SERVER_URL,
+        currentState: { name: state.name, company: state.company, reason: state.reason }
+      });
+
+      try {
+        const payload = {
+          messages: [
+            { role: "system", content: TERMINAL_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: userPrompt }
+              ]
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2048,
+          temperature: 0.1
+        };
+
+        const resp = await fetch(SERVER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const errBody = await resp.text();
+          throw new Error(`Server Error ${resp.status}: ${errBody || resp.statusText}`);
+        }
+
+        const data = await resp.json();
+        const dur = Math.round(performance.now() - totalStartTime);
+        document.getElementById('telemetry-latency').textContent = `Latenz: ${dur} ms (Gemma)`;
+
+        const dotEl = document.getElementById('server-dot');
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
+
+        const rawContent = data.choices[0]?.message?.content || '';
+        const reasoning = data.choices[0]?.message?.reasoning_content || '';
+        const parsed = safeParseJson(rawContent);
+
+        addTrackingLog('INFERENCE', `Inferenz fertig (${dur} ms)`, {
+          durationMs: dur,
+          rawResponse: rawContent,
+          reasoning: reasoning,
+          finishReason: data.choices[0]?.finish_reason,
+          parsedResult: parsed,
+          tokensUsed: data.usage || null
+        });
+
+        if (parsed) {
+          applyExtraction(parsed, text);
+        } else if (rawContent) {
+          appendAiMessage(rawContent);
+        }
+      } catch (err) {
+        console.error("Text inference error:", err);
+        addTrackingLog('ERROR', 'Text-Inferenz Fehlgeschlagen', { error: err.message, endpoint: SERVER_URL });
+        document.getElementById('telemetry-latency').textContent = "Fehler bei Text-Inferenz (Server auf 8080 prüfen)";
+        const dotEl = document.getElementById('server-dot');
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-red-500 shrink-0";
+      }
+    }
+
+    // Apply Extracted Fields to State with Deterministic Business Logic
+    function applyExtraction(parsed, transcript) {
+      if (!parsed) return;
+
+      if (parsed.name && parsed.name !== 'null' && parsed.name !== 'unbekannt' && parsed.name.trim() !== '') {
+        state.name = parsed.name.trim();
+      }
+      if (parsed.company && parsed.company !== 'null' && parsed.company !== 'unbekannt' && parsed.company.trim() !== '') {
+        state.company = parsed.company.trim();
+      }
+      if (parsed.reason && parsed.reason !== 'null' && parsed.reason !== 'unbekannt' && parsed.reason.trim() !== '') {
+        state.reason = parsed.reason.trim();
+      }
+      if (transcript) {
+        state.transcription = transcript;
+      }
+
+      // DETERMINISTIC TERMINAL BUSINESS LOGIC:
+      // If name, company, and reason are all present, the registration is 100% COMPLETE!
+      const hasAllFields = Boolean(
+        state.name && state.name.length > 0 &&
+        state.company && state.company.length > 0 &&
+        state.reason && state.reason.length > 0
+      );
+
+      if (hasAllFields) {
+        state.status = 'complete';
+        state.missing_fields = [];
+        state.followup_question = 'Vielen Dank! Alle Angaben sind vollständig erfasst. Ihr Besucherausweis wird gedruckt.';
+      } else {
+        state.status = 'incomplete';
+        const missing = [];
+        if (!state.name) missing.push('name');
+        if (!state.company) missing.push('company');
+        if (!state.reason) missing.push('reason');
+        state.missing_fields = missing;
+
+        const missingLabels = [];
+        if (!state.name) missingLabels.push('Ihren Namen');
+        if (!state.company) missingLabels.push('Ihre Firma (oder "privat")');
+        if (!state.reason) missingLabels.push('den Grund Ihres Besuchs');
+        
+        state.followup_question = parsed.followup_question || `Könnten Sie mir bitte noch ${missingLabels.join(' und ')} nennen?`;
+      }
+
+      if (state.followup_question) {
+        appendAiMessage(state.followup_question);
+      }
+
+      addTrackingLog('DECISION', hasAllFields ? 'Ausweis freigegeben (3/3 vollständig)' : 'Angaben unvollständig', {
+        state: { name: state.name, company: state.company, reason: state.reason },
+        status: state.status,
+        missing: state.missing_fields
+      });
+
+      renderStateUI();
+    }
+
+    // --- Render Extracted Fields & JSON Viewer UI ---
+    function renderStateUI() {
+      // Update JSON viewer
+      document.getElementById('json-viewer').textContent = JSON.stringify(state, null, 2);
+
+      // Field 1: Name
+      const cardName = document.getElementById('card-field-name');
+      const badgeName = document.getElementById('badge-name');
+      const valName = document.getElementById('val-name');
+      if (state.name) {
+        cardName.className = "p-3.5 rounded-xl border border-emerald-500/50 bg-emerald-950/20 shadow-lg shadow-emerald-950/40 transition-all duration-300";
+        badgeName.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        badgeName.textContent = "✓ ERFASST";
+        valName.className = "text-base font-bold text-white";
+        valName.textContent = state.name;
+      } else {
+        cardName.className = "p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300";
+        badgeName.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30";
+        badgeName.textContent = "FEHLT / MISSING";
+        valName.className = "text-base font-bold text-gray-400 italic";
+        valName.textContent = "-- Noch nicht genannt --";
+      }
+
+      // Field 2: Company
+      const cardCompany = document.getElementById('card-field-company');
+      const badgeCompany = document.getElementById('badge-company');
+      const valCompany = document.getElementById('val-company');
+      if (state.company) {
+        cardCompany.className = "p-3.5 rounded-xl border border-emerald-500/50 bg-emerald-950/20 shadow-lg shadow-emerald-950/40 transition-all duration-300";
+        badgeCompany.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        badgeCompany.textContent = "✓ ERFASST";
+        valCompany.className = "text-base font-bold text-white";
+        valCompany.textContent = state.company;
+      } else {
+        cardCompany.className = "p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300";
+        badgeCompany.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30";
+        badgeCompany.textContent = "FEHLT / MISSING";
+        valCompany.className = "text-base font-bold text-gray-400 italic";
+        valCompany.textContent = "-- Noch nicht genannt --";
+      }
+
+      // Field 3: Reason
+      const cardReason = document.getElementById('card-field-reason');
+      const badgeReason = document.getElementById('badge-reason');
+      const valReason = document.getElementById('val-reason');
+      if (state.reason) {
+        cardReason.className = "p-3.5 rounded-xl border border-emerald-500/50 bg-emerald-950/20 shadow-lg shadow-emerald-950/40 transition-all duration-300";
+        badgeReason.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        badgeReason.textContent = "✓ ERFASST";
+        valReason.className = "text-base font-bold text-white";
+        valReason.textContent = state.reason;
+      } else {
+        cardReason.className = "p-3.5 rounded-xl border border-red-500/40 bg-red-950/20 transition-all duration-300";
+        badgeReason.className = "text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30";
+        badgeReason.textContent = "FEHLT / MISSING";
+        valReason.className = "text-base font-bold text-gray-400 italic";
+        valReason.textContent = "-- Noch nicht genannt --";
+      }
+
+      // Overall Status: Deterministic terminal logic
+      const filledCount = [state.name, state.company, state.reason].filter(Boolean).length;
+      const overallBadge = document.getElementById('badge-overall-status');
+      if (filledCount === 3) {
+        state.status = 'complete';
+        state.missing_fields = [];
+        overallBadge.className = "px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        overallBadge.textContent = "COMPLETE (3/3) ✓";
+        triggerPassPrint();
+      } else {
+        overallBadge.className = "px-2.5 py-0.5 rounded-md text-[11px] font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40";
+        overallBadge.textContent = `INCOMPLETE (${filledCount}/3)`;
+
+        // Reset and lock pass if incomplete
+        document.getElementById('badge-placeholder').classList.remove('hidden');
+        document.getElementById('print-area').classList.add('hidden');
+        const printBtn = document.getElementById('btn-print-pass');
+        printBtn.disabled = true;
+        printBtn.className = "flex-1 py-2.5 px-4 rounded-xl bg-dark-700 text-gray-400 font-bold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed";
+
+        document.getElementById('badge-print-indicator').className = "text-xs font-mono px-2 py-0.5 rounded bg-gray-700 text-gray-300";
+        document.getElementById('badge-print-indicator').textContent = "Warten auf Freigabe";
+      }
+    }
+
+    // Trigger Visitor Pass Printing Animation
+    function triggerPassPrint() {
+      if (!passAlreadyPrinted) {
+        playSuccessChime();
+        passAlreadyPrinted = true;
+        addTrackingLog('PRINT', 'Besucherausweis freigegeben & gedruckt', {
+          name: state.name,
+          company: state.company,
+          reason: state.reason
+        });
+      }
+
+      document.getElementById('pass-visitor-name').textContent = state.name || 'Besucher';
+      document.getElementById('pass-visitor-company').textContent = state.company || 'Privat';
+      document.getElementById('pass-visitor-reason').textContent = state.reason || 'Besuch';
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('de-DE') + ' // ' + now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('pass-date-time').textContent = dateStr;
+
+      const randomId = "VIS-" + Math.floor(10000 + Math.random() * 90000);
+      document.getElementById('pass-id-display').textContent = randomId;
+
+      document.getElementById('badge-placeholder').classList.add('hidden');
+      const pass = document.getElementById('print-area');
+      pass.classList.remove('hidden');
+
+      const printBtn = document.getElementById('btn-print-pass');
+      printBtn.disabled = false;
+      printBtn.className = "flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition cursor-pointer";
+
+      document.getElementById('badge-print-indicator').className = "text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold";
+      document.getElementById('badge-print-indicator').textContent = "GEDRUCKT & AKTIV";
+    }
+
+    // --- Chat Helpers ---
+    function appendUserMessage(text) {
+      const history = document.getElementById('chat-history');
+      const div = document.createElement('div');
+      div.className = "flex items-start justify-end gap-2.5";
+      div.innerHTML = `
+        <div class="bg-emerald-600 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm shadow-md max-w-[85%]">
+          ${escapeHtml(text)}
+        </div>
+        <div class="w-7 h-7 rounded-lg bg-emerald-700 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+          DU
+        </div>
+      `;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    let lastAudioBubble = null;
+    function appendAudioUserMessage(title) {
+      const history = document.getElementById('chat-history');
+      const div = document.createElement('div');
+      div.className = "flex items-start justify-end gap-2.5";
+      div.innerHTML = `
+        <div class="bg-emerald-800/80 border border-emerald-500/40 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 text-sm shadow-md max-w-[85%]">
+          <div class="flex items-center gap-2 text-xs font-mono text-emerald-300 font-bold">
+            <svg class="w-4 h-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+            ${title}
+          </div>
+          <div class="audio-transcript-content mt-1 text-xs text-gray-200 italic">
+            🧠 Gemma transkribiert Audio...
+          </div>
+        </div>
+        <div class="w-7 h-7 rounded-lg bg-emerald-700 text-white flex items-center justify-center shrink-0 text-xs font-bold">
+          DU
+        </div>
+      `;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+      lastAudioBubble = div.querySelector('.audio-transcript-content');
+    }
+
+    function updateLastAudioTranscription(transcript) {
+      if (lastAudioBubble) {
+        lastAudioBubble.innerHTML = `<strong>🗣️ Transkript (Gemma STT):</strong> "${escapeHtml(transcript)}"`;
+        lastAudioBubble = null;
+      }
+    }
+
+    function appendAiMessage(text) {
+      const history = document.getElementById('chat-history');
+      const div = document.createElement('div');
+      div.className = "flex items-start gap-2.5";
+      div.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30 text-xs font-bold">
+          AI
+        </div>
+        <div class="bg-dark-700/80 border border-dark-600 rounded-2xl rounded-tl-sm px-4 py-2.5 text-sm text-gray-200 max-w-[85%]">
+          ${escapeHtml(text)}
+        </div>
+      `;
+      history.appendChild(div);
+      history.scrollTop = history.scrollHeight;
+    }
+
+    function escapeHtml(string) {
+      const entityMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return String(string).replace(/[&<>"']/g, s => entityMap[s]);
+    }
+
+    // --- Event Listeners ---
+    document.getElementById('btn-dialog-new-session').addEventListener('click', () => startNewSession(true));
+    document.getElementById('btn-preset-reset-session').addEventListener('click', () => startNewSession(true));
+    document.getElementById('btn-reset-all').addEventListener('click', () => startNewSession(true));
+
+    document.getElementById('btn-mic').addEventListener('click', toggleRecording);
+
+    // Audio file upload handler
+    document.getElementById('audio-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      appendAudioUserMessage(`📁 Datei: ${file.name}`);
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = bufferToBase64(arrayBuffer);
+      const ext = file.name.split('.').pop().toLowerCase();
+      await sendAudioToGemma(base64, ext, false);
+      e.target.value = '';
+    });
+
+    // Sample WAV button
+    document.getElementById('btn-load-sample-wav').addEventListener('click', async () => {
+      try {
+        appendAudioUserMessage("📁 Test-Audio: speech.wav (Johannes Müller von Siemens)");
+        if (window.SAMPLE_AUDIO_BASE64) {
+          await sendAudioToGemma(window.SAMPLE_AUDIO_BASE64, 'wav', true);
+        } else {
+          const resp = await fetch('speech.wav');
+          if (!resp.ok) throw new Error("speech.wav nicht erreichbar");
+          const buf = await resp.arrayBuffer();
+          const b64 = bufferToBase64(buf);
+          await sendAudioToGemma(b64, 'wav', true);
+        }
+      } catch (e) {
+        alert("Fehler beim Senden des Test-Audios: " + e.message);
+      }
+    });
+
+    document.getElementById('text-input-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('user-text-input');
+      const val = input.value.trim();
+      if (val) {
+        processTextInput(val, false);
+        input.value = '';
+      }
+    });
+
+    document.getElementById('btn-print-pass').addEventListener('click', () => {
+      window.print();
+    });
+
+    // --- TRANSLATOR MODAL CONTROLLER ("Übersetzen-Ding") ---
+    const transModal = document.getElementById('translator-modal');
+    const transVisualizer = createVisualizerController('trans-visualizer-canvas', 'trans-signal-pill', null, null);
+
+    let isTransRecording = false;
+    let transAudioCtx = null;
+    let transMediaStream = null;
+    let transWorkletNode = null;
+    let transScriptNode = null;
+    let transAnalyser = null;
+    let transPcmData = [];
+    let transTimerInterval = null;
+    let transStartTime = 0;
+
+    function openTranslatorModal() {
+      if (transModal) transModal.classList.remove('hidden');
+      transVisualizer.drawIdle();
+    }
+
+    function closeTranslatorModal() {
+      if (isTransRecording) stopTransRecording();
+      if (transModal) transModal.classList.add('hidden');
+    }
+
+    document.getElementById('btn-open-translator').addEventListener('click', openTranslatorModal);
+    document.getElementById('btn-close-translator').addEventListener('click', closeTranslatorModal);
+    document.getElementById('btn-trans-done').addEventListener('click', closeTranslatorModal);
+
+    // Close on click outside modal content
+    transModal.addEventListener('click', (e) => {
+      if (e.target === transModal) closeTranslatorModal();
+    });
+
+    // Reset translator UI for next sentence / "Widersprechen / Neuer Satz"
+    document.getElementById('btn-trans-reset').addEventListener('click', () => {
+      if (isTransRecording) stopTransRecording();
+      document.getElementById('trans-orig-text').textContent = "-- Noch keine Aufnahme getätigt. Sprechen Sie ins Mikrofon --";
+      document.getElementById('trans-orig-text').className = "text-sm font-medium text-gray-400 bg-dark-950/70 p-3 rounded-lg border border-dark-800 min-h-[48px] italic";
+      document.getElementById('trans-lang-badge').textContent = "Sprache: Noch keine";
+      document.getElementById('trans-de-text').textContent = "-- Deutsche Übersetzung erscheint hier --";
+      document.getElementById('trans-de-text').className = "flex-1 text-sm font-semibold text-gray-400 bg-dark-950/70 p-3.5 rounded-lg border border-dark-800 min-h-[64px] italic leading-relaxed";
+      document.getElementById('trans-en-text').textContent = "-- English translation appears here --";
+      document.getElementById('trans-en-text').className = "flex-1 text-sm font-semibold text-gray-400 bg-dark-950/70 p-3.5 rounded-lg border border-dark-800 min-h-[64px] italic leading-relaxed";
+      document.getElementById('trans-latency').textContent = "Bereit für neuen Satz";
+      transVisualizer.drawIdle();
+      playBeep(400, 0.08);
+    });
+
+    // Copy buttons
+    function setupCopyButton(btnId, targetTextId) {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const el = document.getElementById(targetTextId);
+        if (!el || el.classList.contains('italic')) return;
+        navigator.clipboard.writeText(el.textContent.trim());
+        const orig = btn.innerHTML;
+        btn.textContent = "✓ Kopiert!";
+        setTimeout(() => btn.innerHTML = orig, 1500);
+      });
+    }
+    setupCopyButton('btn-copy-orig', 'trans-orig-text');
+    setupCopyButton('btn-copy-de', 'trans-de-text');
+    setupCopyButton('btn-copy-en', 'trans-en-text');
+
+    // Translator recording logic
+    async function startTransRecording() {
+      try {
+        transPcmData = [];
+        transMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        transAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (transAudioCtx.state === 'suspended') {
+          await transAudioCtx.resume();
+        }
+
+        const source = transAudioCtx.createMediaStreamSource(transMediaStream);
+        transAnalyser = transAudioCtx.createAnalyser();
+        transAnalyser.fftSize = 128;
+        transAnalyser.smoothingTimeConstant = 0.35;
+        source.connect(transAnalyser);
+
+        const mute = transAudioCtx.createGain();
+        mute.gain.value = 0;
+        transAnalyser.connect(mute);
+        mute.connect(transAudioCtx.destination);
+
+        // Synchronous, 100% reliable ScriptProcessor audio collection
+        transScriptNode = transAudioCtx.createScriptProcessor(4096, 1, 1);
+        transScriptNode.onaudioprocess = (e) => {
+          if (!isTransRecording) return;
+          transPcmData.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+        };
+        source.connect(transScriptNode);
+        transScriptNode.connect(mute);
+
+        isTransRecording = true;
+        transVisualizer.start(transAnalyser);
+        playBeep(880, 0.1);
+
+        document.getElementById('btn-trans-mic').classList.add('mic-recording');
+        document.getElementById('trans-mic-label').textContent = "Aufnahme stoppen & übersetzen";
+        document.getElementById('trans-recording-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-ping";
+        document.getElementById('trans-audio-status').textContent = "Aufnahme läuft... Bitte sprechen.";
+        const timer = document.getElementById('trans-recording-timer');
+        if (timer) timer.className = "font-mono text-xs font-bold text-blue-300 bg-dark-800 px-2 py-0.5 rounded border border-blue-500/40";
+
+        transStartTime = Date.now();
+        transTimerInterval = setInterval(() => {
+          const elap = Math.floor((Date.now() - transStartTime) / 1000);
+          const m = String(Math.floor(elap / 60)).padStart(2, '0');
+          const s = String(elap % 60).padStart(2, '0');
+          if (timer) timer.textContent = `${m}:${s}`;
+        }, 500);
+
+      } catch (err) {
+        console.error("Trans mic error:", err);
+        alert("Mikrofon-Zugriff fehlgeschlagen:\n" + err.message);
+      }
+    }
+
+    async function stopTransRecording() {
+      if (!isTransRecording) return;
+      isTransRecording = false;
+      clearInterval(transTimerInterval);
+
+      transVisualizer.stop();
+      if (transAnalyser) {
+        try { transAnalyser.disconnect(); } catch (e) {}
+        transAnalyser = null;
+      }
+
+      document.getElementById('btn-trans-mic').classList.remove('mic-recording');
+      document.getElementById('trans-mic-label').textContent = "Sprache aufnehmen & übersetzen";
+      document.getElementById('trans-audio-status').textContent = "🧠 Gemma übersetzt Sprache...";
+      document.getElementById('trans-recording-dot').className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-spin";
+      const pill = document.getElementById('trans-signal-pill');
+      if (pill) {
+        pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1 animate-pulse";
+        pill.innerHTML = `<span>⚡ KI übersetzt...</span>`;
+      }
+
+      if (transMediaStream) {
+        transMediaStream.getTracks().forEach(t => t.stop());
+      }
+      if (transScriptNode) {
+        try { transScriptNode.disconnect(); } catch (e) {}
+        transScriptNode = null;
+      }
+
+      let total = 0;
+      for (const ch of transPcmData) total += ch.length;
+      const merged = new Float32Array(total);
+      let off = 0;
+      for (const ch of transPcmData) {
+        merged.set(ch, off);
+        off += ch.length;
+      }
+
+      const nativeRate = (transAudioCtx && transAudioCtx.sampleRate) ? transAudioCtx.sampleRate : 48000;
+      if (transAudioCtx && transAudioCtx.state !== 'closed') {
+        transAudioCtx.close().catch(() => {});
+      }
+
+      if (total < nativeRate * 0.12) {
+        document.getElementById('trans-audio-status').textContent = "Aufnahme zu kurz";
+        document.getElementById('trans-recording-dot').className = "w-2.5 h-2.5 rounded-full bg-gray-500";
+        return;
+      }
+
+      const resampled16k = await resampleTo16k(merged, nativeRate);
+      const durationSec = (resampled16k.length / 16000).toFixed(2);
+      const wavBuf = createWavBuffer(resampled16k, 16000);
+      const base64Wav = bufferToBase64(wavBuf);
+
+      addTrackingLog('TRANSLATOR_AUDIO_SAVED', `Übersetzer-Audio erfasst (${durationSec}s, 16000 Hz)`, {
+        originalSampleRate: nativeRate,
+        targetSampleRate: 16000,
+        samples: resampled16k.length,
+        durationSeconds: durationSec,
+        audioBase64: base64Wav
+      });
+
+      await runTranslatorInference({ audioBase64: base64Wav, format: 'wav' });
+    }
+
+    function toggleTransRecording() {
+      if (isTransRecording) {
+        stopTransRecording();
+      } else {
+        startTransRecording();
+      }
+    }
+    document.getElementById('btn-trans-mic').addEventListener('click', toggleTransRecording);
+
+    // Audio file upload for translator
+    document.getElementById('trans-file-input').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = bufferToBase64(arrayBuffer);
+      const ext = file.name.split('.').pop().toLowerCase();
+      await runTranslatorInference({ audioBase64: base64, format: ext });
+      e.target.value = '';
+    });
+
+    // Text form input for translator
+    document.getElementById('trans-text-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inp = document.getElementById('trans-text-input');
+      const val = inp.value.trim();
+      if (!val) return;
+      inp.value = '';
+      await runTranslatorInference({ text: val });
+    });
+
+    // Two-Step Translation Pipeline (Step 1: Pure STT -> Step 2: Text Translation)
+    const TRANSLATOR_STT_SYSTEM_PROMPT = `Du bist ein hochpräziser Transkriptions-Assistent.
+Höre das beigefügte gesprochene Audio an.
+
+Deine einzige Aufgabe:
+- 'transcription': Transkribiere das gesprochene Audio exakt, wörtlich und vollständig in der tatsächlich gesprochenen ORIGINALSPRACHE (z. B. auf Deutsch, Englisch, Französisch, Spanisch, etc.).
+- Übersetze die Transkription NIEMALS! Erfinde keine Worte.
+
+Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
+{
+  "transcription": string
+}`;
+
+    const TRANSLATOR_TEXT_SYSTEM_PROMPT = `Du bist ein professioneller Übersetzer.
+Analysiere den gegebenen Text und erstelle hochwertige, natürliche Übersetzungen.
+
+Deine Aufgaben:
+1. 'detected_language': Name der erkannten Ausgangssprache auf Deutsch (z. B. 'Deutsch', 'Englisch', 'Französisch', 'Spanisch', 'Italienisch').
+2. 'german_version': Natürliche, flüssige und präzise Übersetzung ins Deutsche. Wenn der Originaltext bereits Deutsch ist, gib den bereinigten deutschen Text aus.
+3. 'english_version': Natürliche, flüssige und präzise Übersetzung ins Englische. Wenn der Originaltext bereits Englisch ist, gib den bereinigten englischen Text aus.
+
+Antworte AUSSCHLIESSLICH als valides JSON-Objekt in folgendem Format:
+{
+  "detected_language": string,
+  "german_version": string,
+  "english_version": string
+}`;
+
+    async function runTranslatorInference({ audioBase64, format = 'wav', text = null }) {
+      const overallStart = performance.now();
+      const latEl = document.getElementById('trans-latency');
+      const statEl = document.getElementById('trans-audio-status');
+      const dotEl = document.getElementById('trans-recording-dot');
+      const pill = document.getElementById('trans-signal-pill');
+      const origEl = document.getElementById('trans-orig-text');
+      const langBadge = document.getElementById('trans-lang-badge');
+      const deEl = document.getElementById('trans-de-text');
+      const enEl = document.getElementById('trans-en-text');
+
+      if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-cyan-400 animate-spin";
+      if (pill) {
+        pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 flex items-center gap-1 animate-pulse";
+        pill.innerHTML = `<span>⚡ KI verarbeitet...</span>`;
+      }
+
+      let transcription = "";
+      let sttDuration = 0;
+
+      try {
+        // --- SCHRITT 1: AUDIO-TRANSKRIPTION (STT in Originalsprache) ---
+        if (audioBase64) {
+          if (statEl) statEl.textContent = "🎧 Schritt 1/2: Transkribiere Audio (Originalsprache)...";
+          if (origEl) {
+            origEl.textContent = "Höre Audio an und transkribiere...";
+            origEl.className = "text-sm font-medium text-cyan-300 bg-dark-950/70 p-3 rounded-lg border border-cyan-500/40 min-h-[48px] animate-pulse";
+          }
+          if (latEl) latEl.textContent = "🎧 Schritt 1: STT läuft...";
+
+          const sttStart = performance.now();
+          const sttPayload = {
+            messages: [
+              { role: "system", content: TRANSLATOR_STT_SYSTEM_PROMPT },
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: "Transkribiere das gesprochene Audio exakt in der gesprochenen Originalsprache:" },
+                  {
+                    type: "input_audio",
+                    input_audio: { data: audioBase64, format: format }
+                  }
+                ]
+              }
+            ],
+            response_format: { type: "json_object" },
+            max_tokens: 2048,
+            temperature: 0.1
+          };
+
+          const sttResp = await fetch(SERVER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sttPayload)
+          });
+
+          if (!sttResp.ok) {
+            const errTxt = await sttResp.text();
+            throw new Error(`STT Server Error ${sttResp.status}: ${errTxt || sttResp.statusText}`);
+          }
+
+          const sttData = await sttResp.json();
+          sttDuration = Math.round(performance.now() - sttStart);
+          const rawStt = sttData.choices[0]?.message?.content || '{}';
+          const parsedStt = safeParseJson(rawStt) || {};
+          transcription = (parsedStt.transcription || "").trim();
+
+          addTrackingLog('TRANSLATOR_STT', `Schritt 1 fertig (${sttDuration} ms): "${transcription}"`, {
+            durationMs: sttDuration,
+            rawResponse: rawStt,
+            parsedTranscription: transcription,
+            tokensUsed: sttData.usage || null
+          });
+
+        } else if (text) {
+          transcription = text.trim();
+        }
+
+        // Check if transcription produced any content
+        if (!transcription) {
+          if (origEl) {
+            origEl.textContent = "Keine Sprache erkannt. Bitte deutlicher sprechen oder Text eingeben.";
+            origEl.className = "text-sm font-medium text-amber-300 bg-dark-950/70 p-3 rounded-lg border border-amber-500/40 min-h-[48px]";
+          }
+          if (statEl) statEl.textContent = "Keine Sprache erkannt";
+          if (latEl) latEl.textContent = `Latenz: ${sttDuration} ms`;
+          return;
+        }
+
+        // Display transcription immediately in UI for instant user feedback!
+        if (origEl) {
+          origEl.textContent = transcription;
+          origEl.className = "text-sm font-medium text-gray-100 bg-dark-950/70 p-3 rounded-lg border border-dark-800 min-h-[48px] leading-relaxed";
+        }
+
+        // --- SCHRITT 2: TEXT-ÜBERSETZUNG (DE & EN Versionen) ---
+        if (statEl) statEl.textContent = "🌐 Schritt 2/2: Übersetze ins Deutsche und Englische...";
+        if (latEl) latEl.textContent = `Schritt 2: Übersetze Text (${sttDuration ? `STT: ${sttDuration} ms` : 'Text direkt'})...`;
+        if (deEl) {
+          deEl.textContent = "Übersetze ins Deutsche...";
+          deEl.className = "flex-1 text-sm font-semibold text-emerald-300/60 bg-dark-950/70 p-3.5 rounded-lg border border-emerald-500/20 min-h-[64px] animate-pulse";
+        }
+        if (enEl) {
+          enEl.textContent = "Translating into English...";
+          enEl.className = "flex-1 text-sm font-semibold text-blue-300/60 bg-dark-950/70 p-3.5 rounded-lg border border-blue-500/20 min-h-[64px] animate-pulse";
+        }
+
+        const transStart = performance.now();
+        const transPayload = {
+          messages: [
+            { role: "system", content: TRANSLATOR_TEXT_SYSTEM_PROMPT },
+            {
+              role: "user",
+              content: `Originaltext zur Übersetzung:\n"${transcription}"\n\nErkenne die Sprache und erstelle die deutsche und englische Fassung:`
+            }
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 2048,
+          temperature: 0.1
+        };
+
+        const transResp = await fetch(SERVER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(transPayload)
+        });
+
+        if (!transResp.ok) {
+          const errTxt = await transResp.text();
+          throw new Error(`Translation Server Error ${transResp.status}: ${errTxt || transResp.statusText}`);
+        }
+
+        const transData = await transResp.json();
+        const transDuration = Math.round(performance.now() - transStart);
+        const rawTrans = transData.choices[0]?.message?.content || '{}';
+        const parsedTrans = safeParseJson(rawTrans) || {};
+
+        const detectedLang = parsedTrans.detected_language || "Erkannt";
+        const germanVer = parsedTrans.german_version || transcription;
+        const englishVer = parsedTrans.english_version || transcription;
+
+        if (langBadge) {
+          langBadge.textContent = `Sprache: ${detectedLang}`;
+        }
+        if (deEl) {
+          deEl.textContent = germanVer;
+          deEl.className = "flex-1 text-sm font-semibold text-emerald-200 bg-dark-950/70 p-3.5 rounded-lg border border-emerald-500/40 min-h-[64px] leading-relaxed";
+        }
+        if (enEl) {
+          enEl.textContent = englishVer;
+          enEl.className = "flex-1 text-sm font-semibold text-blue-200 bg-dark-950/70 p-3.5 rounded-lg border border-blue-500/40 min-h-[64px] leading-relaxed";
+        }
+
+        const totalDuration = Math.round(performance.now() - overallStart);
+        if (latEl) {
+          latEl.textContent = audioBase64 
+            ? `Latenz: STT ${sttDuration} ms + Übers. ${transDuration} ms = ${totalDuration} ms`
+            : `Latenz: ${transDuration} ms (Text)`;
+        }
+
+        playSuccessChime();
+
+        addTrackingLog('TRANSLATE_DONE', `Übersetzung abgeschlossen (${totalDuration} ms)`, {
+          totalDurationMs: totalDuration,
+          sttDurationMs: sttDuration,
+          transDurationMs: transDuration,
+          transcription: transcription,
+          detectedLanguage: detectedLang,
+          german: germanVer,
+          english: englishVer
+        });
+
+      } catch (err) {
+        console.error("Translation inference failed:", err);
+        if (latEl) latEl.textContent = "Fehler: " + err.message;
+        if (statEl) statEl.textContent = "Verbindungsfehler (Server auf 8080 prüfen)";
+      } finally {
+        if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-gray-500";
+        if (statEl) statEl.textContent = "Mikrofon bereit";
+        if (pill) {
+          pill.className = "px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-dark-800 text-gray-400 border border-dark-700";
+          pill.innerHTML = `<span>⚪ Bereit</span>`;
+        }
+      }
+    }
+
+    // Tab switching for Live JSON vs Tracking & Logs
+    document.getElementById('tab-btn-json').addEventListener('click', () => {
+      document.getElementById('json-viewer').classList.remove('hidden');
+      document.getElementById('tracking-view').classList.add('hidden');
+      document.getElementById('tab-btn-json').className = "text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer";
+      document.getElementById('tab-btn-tracking').className = "text-xs font-mono font-bold px-2.5 py-1 rounded bg-dark-700 text-gray-400 border border-dark-600 hover:text-gray-200 cursor-pointer flex items-center gap-1.5";
+    });
+
+    document.getElementById('tab-btn-tracking').addEventListener('click', () => {
+      document.getElementById('json-viewer').classList.add('hidden');
+      document.getElementById('tracking-view').classList.remove('hidden');
+      document.getElementById('tab-btn-tracking').className = "text-xs font-mono font-bold px-2.5 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 cursor-pointer flex items-center gap-1.5";
+      document.getElementById('tab-btn-json').className = "text-xs font-mono font-bold px-2.5 py-1 rounded bg-dark-700 text-gray-400 border border-dark-600 hover:text-gray-200 cursor-pointer";
+      renderTrackingUI();
+    });
+
+    document.getElementById('btn-copy-tracking').addEventListener('click', () => {
+      navigator.clipboard.writeText(JSON.stringify(trackingLogs, null, 2));
+      const btn = document.getElementById('btn-copy-tracking');
+      btn.textContent = "✓ Kopiert!";
+      setTimeout(() => btn.textContent = "📋 Logs kopieren", 1500);
+    });
+
+
+    // Preset buttons with clean session management
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.getAttribute('data-prompt');
+        const shouldReset = btn.getAttribute('data-reset') === 'true';
+        processTextInput(text, shouldReset);
+      });
+    });
+
+    // Live Clock
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock-display').textContent = now.toLocaleTimeString('de-DE');
+    }, 1000);
+
+    // --- Server Status Check (Fixed 8080) ---
+    async function checkServerHealth() {
+      const dotEl = document.getElementById('server-dot');
+      try {
+        const res = await fetch('http://127.0.0.1:8080/health');
+        if (res.ok) {
+          if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0";
+          return true;
+        }
+      } catch (err) {}
+      if (dotEl) dotEl.className = "w-2.5 h-2.5 rounded-full bg-red-500 shrink-0";
+      return false;
+    }
+
+    const btnCheckEp = document.getElementById('btn-check-server');
+    if (btnCheckEp) btnCheckEp.addEventListener('click', checkServerHealth);
+
+    // Initial check on load
+    checkServerHealth();
+
+    // Start 100% clean session on initial page load
+    window.addEventListener('DOMContentLoaded', () => {
+      startNewSession(false);
+    });
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      startNewSession(false);
+    }
+
+    // Wire up quick test buttons in translator modal
+    document.querySelectorAll('.trans-quick-test').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const txt = btn.getAttribute('data-text');
+        const inp = document.getElementById('trans-text-input');
+        if (inp) inp.value = txt;
+        runTranslatorInference({ text: txt });
+      });
+    });
+  </script>
+</body>
+</html>

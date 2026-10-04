@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<title>llama.cpp Download-Kompass – LINUX · UBUNTU</title>
+<defs>
+  <filter id="sh" x="-10%" y="-10%" width="120%" height="130%">
+    <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#0F172A" flood-opacity="0.10"/>
+  </filter>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#A3AFC2"/>
+  </marker>
+</defs>
+<rect width="1920" height="1080" fill="#F6F7F9"/>
+<rect x="0" y="0" width="1920" height="8" rx="0" fill="#7C3AED" />
+<text x="60" y="78" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="46" font-weight="800" fill="#0F172A" text-anchor="start">llama.cpp Download-Kompass</text>
+<text x="60" y="116" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="21" fill="#0F172A" text-anchor="start"><tspan fill="#64748B">Quelle: </tspan><tspan fill="#7C3AED" font-weight="700">github.com/ggml-org/llama.cpp/releases</tspan><tspan fill="#64748B">  →  neuestes Release  →  „Assets“ aufklappen</tspan></text>
+<rect x="1590" y="36" width="270" height="60" rx="30" fill="#E95420" />
+<text x="1725" y="75" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF" text-anchor="middle">LINUX · UBUNTU</text>
+<text x="60" y="152" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" fill="#0F172A" text-anchor="start"><tspan fill="#64748B">Alle Dateien heißen  </tspan><tspan fill="#0F172A" font-weight="700" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace">llama-bXXXX-bin-</tspan><tspan fill="#64748B">…   (XXXX = aktuelle Build-Nr., z. B. b11377)      </tspan><tspan fill="#F59E0B" font-size="20">■ </tspan><tspan fill="#92400E" font-weight="700">Gelb = zweites Archiv (CUDA-Runtime) laden &amp; in DENSELBEN Ordner entpacken</tspan></text>
+<rect x="60" y="430" width="320" height="160" rx="20" fill="#1E293B" filter="url(#sh)" />
+<text x="220.0" y="487.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Dedizierte</text>
+<text x="220.0" y="519.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Grafikkarte?</text>
+<text x="220.0" y="559.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#CBD5E1" text-anchor="middle">Nur Onboard/iGPU = Nein</text>
+<rect x="480" y="290" width="310" height="140" rx="20" fill="#1E293B" filter="url(#sh)" />
+<text x="635.0" y="337.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Welcher</text>
+<text x="635.0" y="369.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Hersteller?</text>
+<text x="635.0" y="409.0" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="400" fill="#CBD5E1" text-anchor="middle">lspci | grep -iE 'vga|3d'</text>
+<rect x="480" y="750" width="310" height="140" rx="20" fill="#1E293B" filter="url(#sh)" />
+<text x="635.0" y="797.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">CPU-</text>
+<text x="635.0" y="829.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Architektur?</text>
+<text x="635.0" y="869.0" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="16" font-weight="400" fill="#CBD5E1" text-anchor="middle">uname -m</text>
+<text x="635" y="915" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="600" fill="#64748B" text-anchor="middle">x86_64 = x64 · aarch64 = arm64</text>
+<rect x="880" y="175" width="300" height="170" rx="20" fill="#1E293B" filter="url(#sh)" />
+<text x="1030.0" y="237.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Blackwell-</text>
+<text x="1030.0" y="269.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="27" font-weight="700" fill="#FFFFFF" text-anchor="middle">Generation?</text>
+<text x="1030.0" y="309.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#CBD5E1" text-anchor="middle">RTX 50xx &amp; neuer</text>
+<text x="1030" y="368" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="15" font-weight="600" fill="#64748B" text-anchor="middle">Modell prüfen: nvidia-smi</text>
+<path d="M380,510 C430.0,510 430.0,360 476,360" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="406.48" y="419.5" width="47.040000000000006" height="31" rx="15.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="2" /><text x="430.0" y="441.12" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1E293B" text-anchor="middle">Ja</text>
+<path d="M380,510 C430.0,510 430.0,820 476,820" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="396.96" y="649.5" width="66.08000000000001" height="31" rx="15.5" fill="#FFFFFF" stroke="#1E293B" stroke-width="2" /><text x="430.0" y="671.12" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1E293B" text-anchor="middle">Nein</text>
+<path d="M790,325 C835.0,325 835.0,260 876,260" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="792.44" y="277.0" width="85.12" height="31" rx="15.5" fill="#FFFFFF" stroke="#5E9400" stroke-width="2" /><text x="835.0" y="298.62" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#5E9400" text-anchor="middle">NVIDIA</text>
+<path d="M790,375 C1040.0,375 1040.0,510 1286,510" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="1011.72" y="427.0" width="56.56" height="31" rx="15.5" fill="#FFFFFF" stroke="#D7191F" stroke-width="2" /><text x="1040.0" y="448.62" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#D7191F" text-anchor="middle">AMD</text>
+<path d="M790,410 C1040.0,410 1040.0,620 1286,620" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="1002.2" y="499.5" width="75.6" height="31" rx="15.5" fill="#FFFFFF" stroke="#0068B5" stroke-width="2" /><text x="1040.0" y="521.12" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#0068B5" text-anchor="middle">Intel</text>
+<path d="M1180,240 C1235.0,240 1235.0,235 1286,235" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="1212.6" y="223.0" width="44.8" height="29" rx="14.5" fill="#FFFFFF" stroke="#5E9400" stroke-width="2" /><text x="1235.0" y="242.9" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#5E9400" text-anchor="middle">Ja</text>
+<path d="M1180,290 C1235.0,290 1235.0,380 1286,380" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="1204.2" y="320.5" width="61.6" height="29" rx="14.5" fill="#FFFFFF" stroke="#5E9400" stroke-width="2" /><text x="1235.0" y="340.4" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="700" fill="#5E9400" text-anchor="middle">Nein</text>
+<path d="M790,795 C1040.0,795 1040.0,770 1286,770" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="945.08" y="767.0" width="189.84" height="31" rx="15.5" fill="#FFFFFF" stroke="#475569" stroke-width="2" /><text x="1040.0" y="788.62" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#475569" text-anchor="middle">x64 · Intel / AMD</text>
+<path d="M790,850 C1040.0,850 1040.0,880 1286,880" fill="none" stroke="#A3AFC2" stroke-width="3" marker-end="url(#arr)"/><rect x="845.12" y="849.5" width="389.76000000000005" height="31" rx="15.5" fill="#FFFFFF" stroke="#475569" stroke-width="2" /><text x="1040.0" y="871.12" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#475569" text-anchor="middle">arm64 · z. B. Raspberry Pi 5, Graviton</text>
+<rect x="1290" y="170" width="590" height="130" rx="14" fill="#5E9400" filter="url(#sh)" />
+<rect x="1299" y="170" width="581" height="130" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="170" width="590" height="130" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="206" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#5E9400" text-anchor="start">NVIDIA · CUDA 13</text>
+<text x="1858" y="206" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">RTX 50xx · Blackwell</text>
+<text x="1320" y="242" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-cuda-13.4-x64.tar.gz</tspan></text>
+<rect x="1316" y="256" width="540" height="32" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5" />
+<text x="1328" y="278" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="14.5" fill="#0F172A" text-anchor="start"><tspan fill="#92400E" font-weight="700" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif">+ mitladen: </tspan><tspan fill="#92400E" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace">cudart-llama-bXXXX-bin-ubuntu-cuda-13.4-x64.tar.gz</tspan></text>
+<rect x="1290" y="315" width="590" height="130" rx="14" fill="#5E9400" filter="url(#sh)" />
+<rect x="1299" y="315" width="581" height="130" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="315" width="590" height="130" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="351" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#5E9400" text-anchor="start">NVIDIA · CUDA 12</text>
+<text x="1858" y="351" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">RTX 20/30/40 · GTX 10/16</text>
+<text x="1320" y="387" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-cuda-12.8-x64.tar.gz</tspan></text>
+<rect x="1316" y="401" width="540" height="32" rx="8" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5" />
+<text x="1328" y="423" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="14.5" fill="#0F172A" text-anchor="start"><tspan fill="#92400E" font-weight="700" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif">+ mitladen: </tspan><tspan fill="#92400E" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace">cudart-llama-bXXXX-bin-ubuntu-cuda-12.8-x64.tar.gz</tspan></text>
+<rect x="1290" y="462" width="590" height="96" rx="14" fill="#D7191F" filter="url(#sh)" />
+<rect x="1299" y="462" width="581" height="96" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="462" width="590" height="96" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="498" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#D7191F" text-anchor="start">AMD · ROCm</text>
+<text x="1858" y="498" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">Radeon RX 6000/7000/9000</text>
+<text x="1320" y="534" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-rocm-10.0-x64.tar.gz</tspan></text>
+<rect x="1290" y="572" width="590" height="96" rx="14" fill="#0068B5" filter="url(#sh)" />
+<rect x="1299" y="572" width="581" height="96" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="572" width="590" height="96" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="608" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#0068B5" text-anchor="start">Intel · SYCL</text>
+<text x="1858" y="608" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">FP16 · bei Problemen: sycl-fp32</text>
+<text x="1320" y="644" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-sycl-fp16-x64.tar.gz</tspan></text>
+<rect x="1290" y="722" width="590" height="96" rx="14" fill="#475569" filter="url(#sh)" />
+<rect x="1299" y="722" width="581" height="96" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="722" width="590" height="96" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="758" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#475569" text-anchor="start">Nur CPU · x64</text>
+<text x="1858" y="758" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">Intel Core / AMD Ryzen</text>
+<text x="1320" y="794" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-x64.tar.gz</tspan></text>
+<rect x="1290" y="832" width="590" height="96" rx="14" fill="#475569" filter="url(#sh)" />
+<rect x="1299" y="832" width="581" height="96" rx="12" fill="#FFFFFF" />
+<rect x="1290" y="832" width="590" height="96" rx="14" fill="none" stroke="#E2E8F0" stroke-width="1.5" />
+<text x="1320" y="868" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="23" font-weight="700" fill="#475569" text-anchor="start">Nur CPU · arm64</text>
+<text x="1858" y="868" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="500" fill="#64748B" text-anchor="end">ARM-Prozessor</text>
+<text x="1320" y="904" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace" font-size="19" fill="#0F172A" text-anchor="start"><tspan fill="#94A3B8">llama-bXXXX-bin-</tspan><tspan fill="#0F172A" font-weight="700">ubuntu-arm64.tar.gz</tspan></text>
+<rect x="60" y="950" width="586" height="92" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" filter="url(#sh)" />
+<circle cx="96" cy="996.0" r="20" fill="#7C3AED"/>
+<text x="96" y="1003.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="21" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
+<text x="130" y="986" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#0F172A" text-anchor="start">Herunterladen</text>
+<text x="130" y="1018" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#0F172A" text-anchor="start"><tspan fill="#64748B">Datei(en) aus dem Baum oben laden</tspan></text>
+<rect x="677" y="950" width="586" height="92" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" filter="url(#sh)" />
+<circle cx="713" cy="996.0" r="20" fill="#7C3AED"/>
+<text x="713" y="1003.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="21" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
+<text x="747" y="986" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#0F172A" text-anchor="start">Entpacken – alles in EINEN Ordner</text>
+<text x="747" y="1018" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#0F172A" text-anchor="start"><tspan fill="#64748B">je Archiv: tar -xzf &lt;datei&gt;.tar.gz  (cudart ebenso)</tspan></text>
+<rect x="1294" y="950" width="586" height="92" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5" filter="url(#sh)" />
+<circle cx="1330" cy="996.0" r="20" fill="#7C3AED"/>
+<text x="1330" y="1003.0" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="21" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
+<text x="1364" y="986" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="20" font-weight="700" fill="#0F172A" text-anchor="start">Modell (.gguf) dazu → Terminal → starten</text>
+<text x="1364" y="1018" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#0F172A" text-anchor="start"><tspan fill="#0F172A" font-weight="700" font-family="'Cascadia Mono', Consolas, Menlo, 'DejaVu Sans Mono', monospace">./llama-server -m modell.gguf</tspan><tspan fill="#64748B">   → localhost:8080</tspan></text>
+<text x="60" y="1066" font-family="'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#64748B" text-anchor="start">Bewusst weggelassen: Vulkan (Universal-Fallback), OpenVINO, s390x, Snapdragon. NVIDIA auf arm64 (DGX Spark, Jetson Thor): ubuntu-cuda-13.4-arm64 + passende cudart. ROCm/SYCL: Treiber bzw. Runtime installiert haben.</text>
+</svg>
