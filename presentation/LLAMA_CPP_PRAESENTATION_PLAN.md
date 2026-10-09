@@ -1,6 +1,6 @@
 # 🦙 Präsentationsplan (20-Minuten-Version): llama.cpp – Lokale Inferenz ohne Overhead
 
-> **Format:** 16:9 Widescreen PowerPoint ([`llama_cpp_20min_praesentation.pptx`](file:///c:/Users/Arved\Desktop\llama_präsi\llama_cpp_20min_praesentation.pptx))  
+> **Format:** 16:9 Widescreen PowerPoint ([`llama_cpp_20min_praesentation.pptx`](llama_cpp_20min_praesentation.pptx))  
 > **Dauer:** exakt 20:00 Minuten (inkl. 2.5 Min. Live-Demo & Q&A)  
 > **Publikum:** Entwickler, Architekten, Tech-Leads, Data Scientists  
 > **Design-Stil:** Minimalistischer Retro-Engineering-Stil in **Bahnschrift** (DIN 1451 Ästhetik), matte Charcoal-/Slate-Farbpalette, keine überladenen Untertitel, maximale Übersichtlichkeit  
