@@ -1,6 +1,6 @@
-# Deployment Memory Footprint & Model Catalog (Drive D:\)
+# Deployment Memory Footprint & Model Catalog
 
-This catalog details the complete deployment memory footprint for each model setup found on `D:\`, combining:
+This catalog details the complete deployment memory footprint for each model setup, combining:
 1. **Base Model Weights**
 2. **Vision Multimodal Projector (`mmproj`)**
 3. **Speculative Decoding Draft Head / Model (`mtp` / DSpark)**
