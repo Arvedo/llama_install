@@ -1,11 +1,16 @@
-# 🦙 llama.cpp – Lokale Inferenz ohne Overhead
+# 🦙 Bring your device, get your AI (Arved)
 
+[![Event: 58. Kasseler Webmontag](https://img.shields.io/badge/Event-58._Kasseler_Webmontag-ff4a79.svg)](https://www.meetup.com/de-de/webmontag-kassel/events/315057949/)
+[![Speaker: Arved](https://img.shields.io/badge/Speaker-Arved-blue.svg)](https://github.com/Arvedo)
 [![Status: WIP](https://img.shields.io/badge/status-work--in--progress-orange.svg)](presentation/)
 [![Engine: llama.cpp](https://img.shields.io/badge/engine-llama.cpp-blue.svg)](https://github.com/ggml-org/llama.cpp)
 [![Format: GGUF](https://img.shields.io/badge/format-GGUF-purple.svg)](self-service/models_list.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Dieses Repository begleitet den Vortrag **„llama.cpp – Lokale Inferenz ohne Overhead“**. Es enthält alle Materialien für Teilnehmer, das Self-Service-Setup für eigene Laptops, die Folien sowie die interaktive Live-Demo-Webanwendung.
+Dieses Repository begleitet den StandUp-Vortrag **„bring your device, get your AI“** von **Arved** auf dem **[58. Kasseler Webmontag](https://www.meetup.com/de-de/webmontag-kassel/events/315057949/)** (bei der Micromata GmbH).
+
+Das Ziel: **Jeder bringt sein eigenes Gerät (Laptop, MacBook, Mini-PC) mit und geht mit einer startklaren, rein lokalen KI nach Hause!**  
+Hier findest du das komplette Self-Service-Setup für die vor Ort verteilten USB-Stick-Modelle, alle Cheat Sheets zum Download der passenden llama.cpp-Binaries, die Vortragsfolien sowie den Quellcode des im Vortrag demonstrierten interaktiven KI-Besucherterminals.
 
 ---
 

@@ -1,9 +1,11 @@
-# 📊 llama.cpp – Lokale Inferenz ohne Overhead (Präsentation)
+# 📊 Bring your device, get your AI – StandUp-Präsentation (Arved)
+
+> Begleitmaterial & Folien zum Vortrag auf dem **[58. Kasseler Webmontag](https://www.meetup.com/de-de/webmontag-kassel/events/315057949/)** (bei der Micromata GmbH).
 
 > [!WARNING]
 > ### 🚧 STATUS: WORK IN PROGRESS (ENTWURF)
 > Diese Präsentation befindet sich aktuell noch in aktiver Ausarbeitung.  
-> Die Folien und Sprechernotizen spiegeln den aktuellen Entwicklungs- und Prototypenstand wider.
+> Die Folien spiegeln den aktuellen Entwicklungsstand wider.
 
 ---
 

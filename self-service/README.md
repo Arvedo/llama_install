@@ -1,5 +1,7 @@
 # 🦙 llama.cpp Self-Service Hub & Schnellstart-Guide
 
+> Begleitmaterial & Self-Service-Kit zur Session **„bring your device, get your AI“** (Arved) auf dem **[58. Kasseler Webmontag](https://www.meetup.com/de-de/webmontag-kassel/events/315057949/)** (Micromata GmbH).
+
 Herzlich willkommen! In diesem Ordner findest du alles, was du benötigst, um Modelle mit **llama.cpp** lokal auf deinem Laptop oder Desktop zum Laufen zu bringen – inklusive **Vision/Multimodalität** (`--mmproj`) und beschleunigtem **Speculative Decoding / Drafting** (`-md`).
 
 Die Modelldateien (`.gguf`) stehen entweder direkt vor Ort auf den **USB-Sticks** bereit oder können über die Links im Katalog heruntergeladen werden.
