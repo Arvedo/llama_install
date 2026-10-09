@@ -1,4 +1,4 @@
-# 🦙 Bring your device, get your AI (Arved)
+# 🦙 Bring your device, get your AI
 
 [![Event: 58. Kasseler Webmontag](https://img.shields.io/badge/Event-58._Kasseler_Webmontag-ff4a79.svg)](https://www.meetup.com/de-de/webmontag-kassel/events/315057949/)
 [![Speaker: Arved](https://img.shields.io/badge/Speaker-Arved-blue.svg)](https://github.com/Arvedo)
