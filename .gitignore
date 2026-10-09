@@ -1,0 +1,38 @@
+# ==========================================================
+# Git Ignore Rules for llama.cpp Presentation Repository
+# ==========================================================
+
+# Internal scratchpad, local tests, generator scripts, and raw assets
+stuff/
+
+# Logs and runtime session data
+**/logs/
+*.log
+*.jsonl
+
+# Python cache & virtual environments
+**/__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Microsoft Office temporary lock files
+~$*.pptx
+~$*.docx
+~$*.xlsx
+
+# Operating System specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Audio recordings & temporary audio buffers
+*.wav.tmp
+visitor-terminal/logs/
