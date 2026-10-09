@@ -13,7 +13,6 @@
 | :--- | :--- | :--- |
 | **[`llama_cpp_20min_praesentation.pptx`](llama_cpp_20min_praesentation.pptx)** | Microsoft PowerPoint (16:9) | Editierbare Master-Präsentation im minimalistischen DIN 1451 / Bahnschrift-Engineering-Stil |
 | **[`llama_cpp_20min_praesentation.pdf`](llama_cpp_20min_praesentation.pdf)** | PDF-Dokument (16:9) | Präsentations- und druckfertiger Stand aller Folien |
-| **[`LLAMA_CPP_PRAESENTATION_PLAN.md`](LLAMA_CPP_PRAESENTATION_PLAN.md)** | Markdown-Dokument | Ausführlicher 20-Minuten-Zeitplan, Sprechernotizen & didaktisches Konzept für alle 18 Folien |
 
 ---
 

@@ -29,7 +29,6 @@ Dieses Repository begleitet den Vortrag **„llama.cpp – Lokale Inferenz ohne 
 ├── presentation/                     # 📊 Vortragsfolien (Work In Progress)
 │   ├── llama_cpp_20min_praesentation.pptx # Master-Folien (PowerPoint 16:9, editierbar)
 │   ├── llama_cpp_20min_praesentation.pdf  # Druck- und präsentationsfertiges PDF
-│   ├── LLAMA_CPP_PRAESENTATION_PLAN.md    # Detaillierter 20-Minuten-Ablaufplan & Sprechernotizen
 │   └── README.md                     # Kapitelübersicht & WIP-Hinweis
 │
 ├── START_VISITOR_TERMINAL_DEMO.bat   # ⚡ 1-Klick-Starter für das Besucherterminal (Root)
