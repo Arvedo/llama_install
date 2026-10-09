@@ -122,6 +122,16 @@ cd ~/llama_demo
 
 *(Ersetze die Dateinamen einfach durch die Dateien des Modells, das du von der Liste gewählt hast.)*
 
+> [!TIP]
+> **💡 VRAM-Sparer: Mit `-c` den KV-Cache halbieren**  
+> Große Modelle wie Qwen 27B belegen bei voller nativer Kontextlänge (262k Tokens) über **32 GiB allein für den KV-Cache**!  
+> Wenn dein Arbeitsspeicher oder VRAM knapp ist, hänge einfach `-c 131072` (128k Kontext = **50 % weniger KV-Cache**) oder `-c 65536` (64k Kontext = **75 % weniger KV-Cache**) an:
+> ```bash
+> # Beispiel mit 128k Kontext (-c 131072 spart bei Qwen 27B sofort 16+ GiB VRAM!):
+> llama-server -m Qwen3.8-27B-UD-Q4_K_XL.gguf --mmproj mmproj-BF16.gguf -md mtp-Qwen3.8-27B-Q4_0.gguf -c 131072
+> ```
+> *(Detaillierte Vorher-Nachher-Tabellen für jedes Modell findest du in [`models_list.md`](models_list.md)).*
+
 ---
 
 ## ✨ Und wie nutze ich es jetzt?
